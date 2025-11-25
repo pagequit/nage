@@ -1,0 +1,6 @@
+{
+	"id": "testScene",
+	"width": 48,
+	"height": 48,
+	"entities": ["testEntity"]
+}

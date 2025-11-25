@@ -1,0 +1,29 @@
+body {
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100dvh;
+	width: 100dvw;
+	background: #161616;
+	margin: 0;
+}
+
+#gameContainer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+}
+
+#canvasContainer {
+	position: relative;
+
+	canvas {
+		display: block;
+		image-rendering: pixelated;
+		user-select: none;
+		height: 100%;
+		width: 100%;
+	}
+}

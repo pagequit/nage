@@ -1,0 +1,13 @@
+{
+	"linter": {
+		"rules": {
+			"a11y": "off",
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noAssignInExpressions": "off"
+			}
+		}
+	}
+}
