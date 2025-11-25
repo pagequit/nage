@@ -16,6 +16,10 @@ export type EntityInstance = {
 	sprite: Sprite;
 };
 
+export type Draw = (ctx: CanvasRenderingContext2D) => void;
+
+export type Process = (delta: number) => void;
+
 export function createEntity(
 	id: string,
 	src: string,
@@ -25,12 +29,33 @@ export function createEntity(
 	return { id, width, height, src };
 }
 
-export async function loadEntity(name: string): Promise<EntityInstance> {
-	const entity = (await import(`#/entities/${name}/index.ts`)).default;
+export const entityMap = new Map<string, EntityInstance>();
+export const entityDrawMap = new Map<string, Draw>();
+export const entityProcessMap = new Map<string, Process>();
 
-	const { width, height } = entity;
-	const sprite = createSprite(await loadImage(entity.src), 2, 4);
-	const position = createVector();
+export async function useEntity(data: Entity): Promise<{
+	draw: (fn: Draw) => void;
+	process: (fn: Process) => void;
+	entity: EntityInstance;
+}> {
+	const sprite = createSprite(await loadImage(data.src), 2, 4);
 
-	return { position, width, height, sprite };
+	const entity: EntityInstance = {
+		position: createVector(),
+		width: data.width,
+		height: data.height,
+		sprite,
+	};
+
+	entityMap.set(data.id, entity);
+
+	return {
+		draw(fn: Draw): void {
+			entityDrawMap.set(data.id, fn);
+		},
+		process(fn: Process): void {
+			entityProcessMap.set(data.id, fn);
+		},
+		entity,
+	};
 }
