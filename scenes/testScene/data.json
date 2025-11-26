@@ -2,5 +2,20 @@
 	"id": "testScene",
 	"width": 48,
 	"height": 48,
-	"entities": ["testEntity"]
+	"entities": [
+		{
+			"id": "testEntity",
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		{
+			"id": "testEntity",
+			"position": {
+				"x": 16,
+				"y": 16
+			}
+		}
+	]
 }

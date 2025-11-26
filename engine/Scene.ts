@@ -1,3 +1,6 @@
+import { loadImage } from "#/lib/loadImage.ts";
+import { createSprite } from "#/lib/Sprite.ts";
+import { createVector, type Vector } from "#/lib/Vector.ts";
 import {
 	type Draw as EntityDraw,
 	type EntityInstance,
@@ -11,7 +14,10 @@ export type SceneData = {
 	id: string;
 	width: number;
 	height: number;
-	entities: string[];
+	entities: Array<{
+		id: string;
+		position: Vector;
+	}>;
 };
 
 export type Scene = {
@@ -45,14 +51,14 @@ export const currentScene: Scene = {
 };
 
 function drawEntities(ctx: CanvasRenderingContext2D): void {
-	for (const entity of currentScene.entityPool) {
-		entity.draw(ctx);
+	for (const entry of currentScene.entityPool) {
+		entry.draw(entry.entity, ctx);
 	}
 }
 
 function processEntities(delta: number): void {
-	for (const entity of currentScene.entityPool) {
-		entity.process(delta);
+	for (const entry of currentScene.entityPool) {
+		entry.process(entry.entity, delta);
 	}
 }
 
@@ -89,12 +95,20 @@ export async function loadScene(name: string): Promise<void> {
 	currentScene.data = data;
 
 	for (const entity of data.entities) {
-		await import(`#/entities/${entity}/index.ts`);
+		await import(`#/entities/${entity.id}/index.ts`);
+
+		const e = entityMap.get(entity.id)!;
+		const entityInstance: EntityInstance = {
+			position: entity.position,
+			width: e.width,
+			height: e.height,
+			sprite: createSprite(await loadImage(e.src), 2, 4), // FIXME
+		};
 
 		currentScene.entityPool.push({
-			draw: entityDrawMap.get(entity)!,
-			process: entityProcessMap.get(entity)!,
-			entity: entityMap.get(entity)!,
+			draw: entityDrawMap.get(entity.id)!,
+			process: entityProcessMap.get(entity.id)!,
+			entity: entityInstance,
 		});
 	}
 
