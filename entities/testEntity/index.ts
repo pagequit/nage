@@ -1,4 +1,5 @@
 import { useEntity } from "#/engine/Entity.ts";
+import { viewport } from "#/engine/Viewport.ts";
 import { loadImage } from "#/lib/loadImage.ts";
 import { createSprite, drawSprite } from "#/lib/Sprite.ts";
 
@@ -17,10 +18,10 @@ animate((entity, ctx, _delta) => {
 });
 
 process((entity, _delta) => {
-	if (entity.state.stuff === 1) {
-		entity.position.x += 1;
-		if (entity.position.x > 164) {
-			entity.state.stuff = 0;
-		}
+	entity.position.x += entity.state.stuff;
+	if (entity.position.x > viewport.canvas.width - 16) {
+		entity.state.stuff = -1;
+	} else if (entity.position.x < 0) {
+		entity.state.stuff = 1;
 	}
 });
