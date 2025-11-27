@@ -1,6 +1,6 @@
 {
 	"id": "testScene",
-	"width": 48,
+	"width": 180,
 	"height": 48,
 	"entities": [
 		{
@@ -15,6 +15,13 @@
 			"position": {
 				"x": 16,
 				"y": 16
+			}
+		},
+		{
+			"id": "testEntity",
+			"position": {
+				"x": 32,
+				"y": 32
 			}
 		}
 	]

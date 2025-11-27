@@ -1,18 +1,26 @@
-import { type EntityInstance, useEntity } from "#/engine/Entity.ts";
-import { drawSprite } from "#/lib/Sprite.ts";
-import data from "./data.json";
+import { useEntity } from "#/engine/Entity.ts";
+import { loadImage } from "#/lib/loadImage.ts";
+import { createSprite, drawSprite } from "#/lib/Sprite.ts";
 
-const { draw, process } = useEntity(data);
+const sprite = createSprite(await loadImage("/assets/char-idle.png"), 2, 4);
 
-draw((entity: EntityInstance, ctx: CanvasRenderingContext2D) => {
-	drawSprite(
-		ctx,
-		entity.sprite,
-		entity.position.x,
-		entity.position.y,
-		entity.width,
-		entity.height,
-	);
+const { animate, process } = useEntity("testEntity", {
+	animation: {
+		xFrame: 0,
+		yFrame: 0,
+	},
+	stuff: 1,
 });
 
-process((_entity, _delta) => {});
+animate((entity, ctx, _delta) => {
+	drawSprite(ctx, sprite, entity.position.x, entity.position.y, 16, 16);
+});
+
+process((entity, _delta) => {
+	if (entity.state.stuff === 1) {
+		entity.position.x += 1;
+		if (entity.position.x > 164) {
+			entity.state.stuff = 0;
+		}
+	}
+});

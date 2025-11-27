@@ -1,11 +1,9 @@
-import { loadImage } from "#/lib/loadImage.ts";
-import { createSprite } from "#/lib/Sprite.ts";
-import { createVector, type Vector } from "#/lib/Vector.ts";
+import type { Vector } from "#/lib/Vector.ts";
 import {
-	type Draw as EntityDraw,
-	type EntityInstance,
+	type Entity,
+	type Animate as EntityDraw,
 	type Process as EntityProcess,
-	entityDrawMap,
+	entityAnimateMap,
 	entityMap,
 	entityProcessMap,
 } from "./Entity.ts";
@@ -23,9 +21,9 @@ export type SceneData = {
 export type Scene = {
 	data: SceneData;
 	entityPool: Array<{
-		draw: EntityDraw;
-		process: EntityProcess;
-		entity: EntityInstance;
+		draw: EntityDraw<never>;
+		process: EntityProcess<never>;
+		entity: Entity<never>;
 	}>;
 	process: Process;
 };
@@ -50,9 +48,9 @@ export const currentScene: Scene = {
 	entityPool: [],
 };
 
-function drawEntities(ctx: CanvasRenderingContext2D): void {
+function animateEntities(ctx: CanvasRenderingContext2D, delta: number): void {
 	for (const entry of currentScene.entityPool) {
-		entry.draw(entry.entity, ctx);
+		entry.draw(entry.entity, ctx, delta);
 	}
 }
 
@@ -70,7 +68,7 @@ export function useScene(data: SceneData): {
 	return {
 		process(fn: Process): void {
 			sceneProcessMap.set(data.id, (ctx, delta) => {
-				drawEntities(ctx);
+				animateEntities(ctx, delta);
 				processEntities(delta);
 				fn(ctx, delta);
 			});
@@ -94,21 +92,20 @@ export async function loadScene(name: string): Promise<void> {
 	const data = sceneDataMap.get(name)!;
 	currentScene.data = data;
 
-	for (const entity of data.entities) {
-		await import(`#/entities/${entity.id}/index.ts`);
+	for (const entry of data.entities) {
+		await import(`#/entities/${entry.id}/index.ts`);
 
-		const e = entityMap.get(entity.id)!;
-		const entityInstance: EntityInstance = {
-			position: entity.position,
-			width: e.width,
-			height: e.height,
-			sprite: createSprite(await loadImage(e.src), 2, 4), // FIXME
+		const e = entityMap.get(entry.id) as Entity<never>;
+		const entity: Entity<never> = {
+			id: e.id,
+			position: entry.position,
+			state: structuredClone(e.state),
 		};
 
 		currentScene.entityPool.push({
-			draw: entityDrawMap.get(entity.id)!,
-			process: entityProcessMap.get(entity.id)!,
-			entity: entityInstance,
+			draw: entityAnimateMap.get(entry.id)!,
+			process: entityProcessMap.get(entry.id)!,
+			entity: entity,
 		});
 	}
 

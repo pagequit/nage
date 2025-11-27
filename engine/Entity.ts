@@ -1,52 +1,42 @@
-import type { Sprite } from "#/lib/Sprite.ts";
-import type { Vector } from "#/lib/Vector.ts";
+import { createVector, type Vector } from "#/lib/Vector.ts";
 
-export type Entity = {
+export type Entity<T> = {
 	id: string;
-	src: string;
-	width: number;
-	height: number;
-};
-
-export type EntityInstance = {
 	position: Vector;
-	width: number;
-	height: number;
-	sprite: Sprite;
+	state: T;
 };
 
-export type Draw = (
-	entity: EntityInstance,
+export type Animate<T> = (
+	entity: Entity<T>,
 	ctx: CanvasRenderingContext2D,
+	delta: number,
 ) => void;
 
-export type Process = (entity: EntityInstance, delta: number) => void;
+export type Process<T> = (entity: Entity<T>, delta: number) => void;
 
-export function createEntity(
+export const entityMap = new Map<string, Entity<unknown>>();
+export const entityAnimateMap = new Map<string, Animate<never>>();
+export const entityProcessMap = new Map<string, Process<never>>();
+
+export function useEntity<T>(
 	id: string,
-	src: string,
-	width: number = 16,
-	height: number = 16,
-): Entity {
-	return { id, width, height, src };
-}
-
-export const entityMap = new Map<string, Entity>();
-export const entityDrawMap = new Map<string, Draw>();
-export const entityProcessMap = new Map<string, Process>();
-
-export function useEntity(data: Entity): {
-	draw: (fn: Draw) => void;
-	process: (fn: Process) => void;
+	state: T,
+): {
+	animate: (fn: Animate<T>) => void;
+	process: (fn: Process<T>) => void;
 } {
-	entityMap.set(data.id, data);
+	entityMap.set(id, {
+		id,
+		position: createVector(),
+		state,
+	});
 
 	return {
-		draw(fn: Draw): void {
-			entityDrawMap.set(data.id, fn);
+		animate(fn: Animate<T>): void {
+			entityAnimateMap.set(id, fn);
 		},
-		process(fn: Process): void {
-			entityProcessMap.set(data.id, fn);
+		process(fn: Process<T>): void {
+			entityProcessMap.set(id, fn);
 		},
 	};
 }
