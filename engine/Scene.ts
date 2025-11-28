@@ -20,13 +20,11 @@ export type SceneData = {
 
 export type Scene = {
 	data: SceneData;
-	entityPool: Map<
+	entityMap: Map<
 		string,
 		{
-			hooks: {
-				animate: AnimateEntity<never>;
-				process: ProcessEntity<never>;
-			};
+			animate: AnimateEntity<never>;
+			process: ProcessEntity<never>;
 			entities: Array<Entity<unknown>>;
 		}
 	>;
@@ -50,21 +48,21 @@ export const currentScene: Scene = {
 		entities: [],
 	},
 	process: () => {},
-	entityPool: new Map(),
+	entityMap: new Map(),
 };
 
 function animateEntities(ctx: CanvasRenderingContext2D, delta: number): void {
-	for (const entry of currentScene.entityPool.values()) {
+	for (const entry of currentScene.entityMap.values()) {
 		for (const entity of entry.entities) {
-			entry.hooks.animate(entity as Entity<never>, ctx, delta);
+			entry.animate(entity as Entity<never>, ctx, delta);
 		}
 	}
 }
 
 function processEntities(delta: number): void {
-	for (const entry of currentScene.entityPool.values()) {
+	for (const entry of currentScene.entityMap.values()) {
 		for (const entity of entry.entities) {
-			entry.hooks.process(entity as Entity<never>, delta);
+			entry.process(entity as Entity<never>, delta);
 		}
 	}
 }
@@ -111,15 +109,13 @@ export async function loadScene(name: string): Promise<void> {
 			state: structuredClone(e.state),
 		};
 
-		if (currentScene.entityPool.has(e.id)) {
-			const pool = currentScene.entityPool.get(e.id);
+		if (currentScene.entityMap.has(e.id)) {
+			const pool = currentScene.entityMap.get(e.id);
 			pool!.entities.push(entity);
 		} else {
-			currentScene.entityPool.set(e.id, {
-				hooks: {
-					animate: entityAnimateMap.get(entry.id)!,
-					process: entityProcessMap.get(entry.id)!,
-				},
+			currentScene.entityMap.set(e.id, {
+				animate: entityAnimateMap.get(entry.id)!,
+				process: entityProcessMap.get(entry.id)!,
 				entities: [entity],
 			});
 		}
