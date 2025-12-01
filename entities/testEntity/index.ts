@@ -22,7 +22,7 @@ const { animate, process } = useEntity<{
 	stuff: number;
 }>("testEntity", {
 	animations: {
-		idle: createAnimation(2, 250),
+		idle: createAnimation(2, 500),
 		walk: createAnimation(2, 250),
 	},
 	currentAnimation: "idle",
@@ -32,8 +32,8 @@ const { animate, process } = useEntity<{
 animate((entity, ctx, delta) => {
 	animateSprite(
 		ctx,
-		sprites[entity.state.currentAnimation],
-		entity.state.animations[entity.state.currentAnimation],
+		sprites[entity.currentAnimation],
+		entity.animations[entity.currentAnimation],
 		entity.position.x,
 		entity.position.y,
 		delta,
@@ -41,12 +41,12 @@ animate((entity, ctx, delta) => {
 });
 
 process((entity, delta) => {
-	entity.position.x += entity.state.stuff * 0.05 * delta;
+	entity.position.x += entity.stuff * 0.05 * delta;
 	if (entity.position.x > viewport.canvas.width - 16) {
-		entity.state.stuff = -1;
-		entity.state.currentAnimation = "walk";
+		entity.stuff = -1;
+		entity.currentAnimation = "walk";
 	} else if (entity.position.x < 0) {
-		entity.state.stuff = 1;
-		entity.state.currentAnimation = "idle";
+		entity.stuff = 1;
+		entity.currentAnimation = "idle";
 	}
 });

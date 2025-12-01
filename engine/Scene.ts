@@ -99,24 +99,23 @@ export async function loadScene(name: string): Promise<void> {
 	const data = sceneDataMap.get(name)!;
 	currentScene.data = data;
 
-	for (const entry of data.entities) {
-		await import(`#/entities/${entry.id}/index.ts`);
+	for (const entityData of data.entities) {
+		await import(`#/entities/${entityData.id}/index.ts`);
 
-		const e = entityMap.get(entry.id) as Entity<unknown>;
-		const entity: Entity<unknown> = {
-			id: e.id,
-			position: entry.position,
-			state: structuredClone(e.state),
+		const entity = entityMap.get(entityData.id) as Entity<unknown>;
+		const instance: Entity<unknown> = {
+			...structuredClone(entity),
+			position: entityData.position,
 		};
 
-		if (currentScene.entityMap.has(e.id)) {
-			const pool = currentScene.entityMap.get(e.id);
-			pool!.entities.push(entity);
+		if (currentScene.entityMap.has(entity.id)) {
+			const entry = currentScene.entityMap.get(entity.id);
+			entry!.entities.push(instance);
 		} else {
-			currentScene.entityMap.set(e.id, {
-				animate: entityAnimateMap.get(entry.id)!,
-				process: entityProcessMap.get(entry.id)!,
-				entities: [entity],
+			currentScene.entityMap.set(entity.id, {
+				animate: entityAnimateMap.get(entityData.id) ?? (() => {}),
+				process: entityProcessMap.get(entityData.id) ?? (() => {}),
+				entities: [instance],
 			});
 		}
 	}

@@ -1,11 +1,9 @@
 import { createVector, type Vector } from "#/lib/Vector.ts";
 
 export type Entity<T> = {
-	[x: string]: any;
 	id: string;
 	position: Vector;
-	state: T;
-};
+} & T;
 
 export type Animate<T> = (
 	entity: Entity<T>,
@@ -21,7 +19,7 @@ export const entityProcessMap = new Map<string, Process<never>>();
 
 export function useEntity<T>(
 	id: string,
-	state: T,
+	data: T,
 ): {
 	animate: (fn: Animate<T>) => void;
 	process: (fn: Process<T>) => void;
@@ -29,7 +27,7 @@ export function useEntity<T>(
 	entityMap.set(id, {
 		id,
 		position: createVector(),
-		state,
+		...data,
 	});
 
 	return {
