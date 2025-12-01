@@ -1,6 +1,7 @@
 import { createVector, type Vector } from "#/lib/Vector.ts";
 
 export type Entity<T> = {
+	[x: string]: any;
 	id: string;
 	position: Vector;
 	state: T;

@@ -1,54 +1,52 @@
-import { type Entity, useEntity } from "#/engine/Entity.ts";
+import { useEntity } from "#/engine/Entity.ts";
 import { viewport } from "#/engine/Viewport.ts";
+import {
+	type Animation,
+	animateSprite,
+	createAnimation,
+} from "#/lib/Animation.ts";
 import { loadImage } from "#/lib/loadImage.ts";
-import { createSprite, drawSprite, type Sprite } from "#/lib/Sprite.ts";
+import { createSprite } from "#/lib/Sprite.ts";
 
-const spriteIdle = createSprite(await loadImage("/assets/char-idle.png"), 2, 4);
-const spriteWalk = createSprite(await loadImage("/assets/char-walk.png"), 4, 4);
-spriteWalk.yIndex = 2;
+const sprites = {
+	idle: createSprite(await loadImage("/assets/char-idle.png"), 2, 4),
+	walk: createSprite(await loadImage("/assets/char-walk.png"), 4, 4),
+};
 
-function animateSprite(
-	ctx: CanvasRenderingContext2D,
-	sprite: Sprite,
-	entity: Entity<any>,
-	delta: number,
-): void {
-	entity.state.animations.walk.frameDelta += delta;
-	if (
-		entity.state.animations.walk.frameDelta >
-		entity.state.animations.walk.frameTime
-	) {
-		entity.state.animations.walk.frameDelta =
-			entity.state.animations.walk.frameDelta %
-			entity.state.animations.walk.frameTime;
-
-		spriteWalk.xIndex += 1;
-		if (spriteWalk.xIndex >= spriteWalk.xFrames) {
-			spriteWalk.xIndex = 0;
-		}
-	}
-	drawSprite(ctx, spriteWalk, entity.position.x, entity.position.y);
-}
-
-const { animate, process } = useEntity("testEntity", {
+const { animate, process } = useEntity<{
 	animations: {
-		walk: {
-			frameTime: 222,
-			frameDelta: 0,
-		},
+		idle: Animation;
+		walk: Animation;
+	};
+	currentAnimation: "idle" | "walk";
+	stuff: number;
+}>("testEntity", {
+	animations: {
+		idle: createAnimation(2, 250),
+		walk: createAnimation(2, 250),
 	},
+	currentAnimation: "idle",
 	stuff: 1,
 });
 
 animate((entity, ctx, delta) => {
-	animateSprite(ctx, spriteIdle, entity, delta);
+	animateSprite(
+		ctx,
+		sprites[entity.state.currentAnimation],
+		entity.state.animations[entity.state.currentAnimation],
+		entity.position.x,
+		entity.position.y,
+		delta,
+	);
 });
 
 process((entity, delta) => {
 	entity.position.x += entity.state.stuff * 0.05 * delta;
 	if (entity.position.x > viewport.canvas.width - 16) {
 		entity.state.stuff = -1;
+		entity.state.currentAnimation = "walk";
 	} else if (entity.position.x < 0) {
 		entity.state.stuff = 1;
+		entity.state.currentAnimation = "idle";
 	}
 });
