@@ -1,5 +1,5 @@
+import "./RangeSlider.css";
 import type { Component, JSX } from "solid-js";
-import style from "./controls.module.css";
 
 export const RangeSlider: Component<{
 	name: string;
@@ -11,7 +11,7 @@ export const RangeSlider: Component<{
 	onChange?: (value: number) => void;
 	onInput?: (value: number) => void;
 }> = (props) => (
-	<label class={style.rangeSlider}>
+	<label class="range-slider">
 		{props.children}
 		<input
 			type="range"
