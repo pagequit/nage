@@ -1,6 +1,7 @@
 import "./main.css";
 import { type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
+import { currentScene } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
 import { InputField } from "#/tools/controls/InputField.tsx";
 import { RangeSlider } from "#/tools/controls/RangeSlider.tsx";
@@ -65,20 +66,28 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				<div class="scene-props">
 					<InputField
 						name="file"
-						value="/foo/bar"
+						value={currentScene.data.id}
 						icon={FileIcon()}
 					></InputField>
 					<InputField
 						type="number"
 						name="width"
-						value="42"
+						value={String(currentScene.data.width)}
 						icon={ArrowAutofitWidthIcon()}
+						onChange={(value) => {
+							currentScene.data.width = parseInt(value);
+							self.dispatchEvent(new Event("resize"));
+						}}
 					></InputField>
 					<InputField
 						type="number"
 						name="height"
-						value="24"
+						value={String(currentScene.data.height)}
 						icon={ArrowAutofitHeightIcon()}
+						onChange={(value) => {
+							currentScene.data.height = parseInt(value);
+							self.dispatchEvent(new Event("resize"));
+						}}
 					></InputField>
 				</div>
 			</div>
