@@ -1,0 +1,33 @@
+.file-browser {
+	background: var(--c-bg-0);
+	margin-left: calc(var(--sp-2) * -1);
+}
+
+.file-list {
+	margin: 0;
+	list-style: none;
+	padding: 0 0 0 var(--sp-2);
+}
+
+.file-item {
+	display: flex;
+	flex-flow: column nowrap;
+}
+
+.file-label {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	padding: var(--sp-1);
+	border-radius: var(--sp-1);
+	cursor: pointer;
+
+	svg {
+		margin-right: var(--sp-1);
+	}
+
+	&.active,
+	&:hover {
+		background: var(--c-bg-2);
+	}
+}

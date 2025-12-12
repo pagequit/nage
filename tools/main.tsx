@@ -6,11 +6,48 @@ import { setScale, viewport } from "#/engine/Viewport.ts";
 import { InputField } from "#/tools/controls/InputField.tsx";
 import { RangeSlider } from "#/tools/controls/RangeSlider.tsx";
 import {
+	type BrowserFile,
+	type BrowserFolder,
+	FileBrowser,
+} from "./FileBrowser.tsx";
+import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
 	FileIcon,
 	ZoomScanIcon,
 } from "./icons/index.ts";
+
+const root = new Map<string, BrowserFile | BrowserFolder>([
+	[
+		"foo",
+		{
+			path: "/foo.file",
+		},
+	],
+	[
+		"bar",
+		{
+			path: "/bar.file",
+		},
+	],
+	[
+		"folder",
+		new Map([
+			[
+				"fuzz",
+				{
+					path: "/fuzz.file",
+				},
+			],
+			[
+				"buzz",
+				{
+					path: "/buzz.file",
+				},
+			],
+		]),
+	],
+]);
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
@@ -90,6 +127,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 						}}
 					></InputField>
 				</div>
+
+				<FileBrowser root={root} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
