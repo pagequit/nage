@@ -2,74 +2,73 @@ import "./FileBrowser.css";
 import { type Component, createSignal, Index, Show } from "solid-js";
 import { FileIcon, FolderIcon, FolderOpenIcon } from "./icons/index.ts";
 
-export type BrowserFile = { path: string };
+export type BrowserFolder = Map<string, string | BrowserFolder>;
 
-export type BrowserFolder = Map<string, BrowserFile | BrowserFolder>;
+export type FileHandler = (path: string) => void;
 
-function isFolder(entry: BrowserFile | BrowserFolder): entry is BrowserFolder {
+function isFolder(entry: string | BrowserFolder): entry is BrowserFolder {
 	return typeof (entry as BrowserFolder).size === "number";
 }
 
-const FileEntry: Component<{ name: string; file: BrowserFile }> = ({
-	name,
-	file,
-}) => {
-	return (
-		<div class="file-label" onClick={[console.log, file]}>
-			<FileIcon />
-			<span>{name}</span>
-		</div>
-	);
-};
-
-const FolderEntry: Component<{
-	folder: BrowserFolder;
-	name: string;
-	index: number;
-}> = ({ folder, name, index }) => {
-	const [isOpen, setIsOpen] = createSignal(index < 1);
-
-	return (
-		<>
-			<div class="file-label" onClick={() => setIsOpen(!isOpen())}>
-				{isOpen() ? <FolderOpenIcon /> : <FolderIcon />}
+export const FileBrowser: Component<{
+	root: BrowserFolder;
+	handler: FileHandler;
+}> = ({ root, handler }) => {
+	const FileEntry: Component<{
+		name: string;
+		path: string;
+	}> = ({ name, path }) => {
+		return (
+			<div class="file-label" onClick={[handler, path]}>
+				<FileIcon />
 				<span>{name}</span>
 			</div>
+		);
+	};
 
-			<Show when={isOpen()}>
-				<FileList folder={folder} />
-			</Show>
-		</>
-	);
-};
+	const FolderEntry: Component<{
+		folder: BrowserFolder;
+		name: string;
+		open: boolean;
+	}> = ({ folder, name, open }) => {
+		const [isOpen, setIsOpen] = createSignal(open);
 
-const FileList: Component<{ folder: BrowserFolder }> = ({ folder }) => {
-	return (
-		<ul class="file-list">
-			<Index each={[...folder.entries()]}>
-				{(item, index) => {
-					const [name, entry] = item();
+		return (
+			<>
+				<div class="file-label" onClick={() => setIsOpen(!isOpen())}>
+					{isOpen() ? <FolderOpenIcon /> : <FolderIcon />}
+					<span>{name}</span>
+				</div>
 
-					return (
-						<li class="file-item">
-							{isFolder(entry) ? (
-								<FolderEntry
-									folder={entry as BrowserFolder}
-									name={name}
-									index={index}
-								/>
-							) : (
-								<FileEntry name={name} file={entry as BrowserFile} />
-							)}
-						</li>
-					);
-				}}
-			</Index>
-		</ul>
-	);
-};
+				<Show when={isOpen()}>
+					<FileList folder={folder} />
+				</Show>
+			</>
+		);
+	};
 
-export const FileBrowser: Component<{ root: BrowserFolder }> = ({ root }) => {
+	const FileList: Component<{ folder: BrowserFolder }> = ({ folder }) => {
+		return (
+			<ul class="file-list">
+				<Index each={[...folder.entries()]}>
+					{(item, index) => {
+						const [name, entry] = item();
+
+						return (
+							<li class="file-item">
+								{isFolder(entry) ? (
+									<FolderEntry folder={entry} name={name} open={index < 1} />
+								) : (
+									<FileEntry name={name} path={entry} />
+								)}
+							</li>
+						);
+					}}
+				</Index>
+			</ul>
+		);
+	};
+
 	return (
 		<div class="file-browser">
 			<FileList folder={root} />

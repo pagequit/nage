@@ -5,11 +5,7 @@ import { currentScene } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
 import { InputField } from "#/tools/controls/InputField.tsx";
 import { RangeSlider } from "#/tools/controls/RangeSlider.tsx";
-import {
-	type BrowserFile,
-	type BrowserFolder,
-	FileBrowser,
-} from "./FileBrowser.tsx";
+import { type BrowserFolder, FileBrowser } from "./FileBrowser.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
@@ -17,36 +13,30 @@ import {
 	ZoomScanIcon,
 } from "./icons/index.ts";
 
-const root = new Map<string, BrowserFile | BrowserFolder>([
+const root = new Map<string, string | BrowserFolder>([
 	[
-		"foo",
-		{
-			path: "/foo.file",
-		},
-	],
-	[
-		"bar",
-		{
-			path: "/bar.file",
-		},
+		"Brrr",
+		new Map<string, string | BrowserFolder>([
+			[
+				"folder",
+				new Map<string, string | BrowserFolder>([
+					["fuzz", "/fuzz.file"],
+					["buzz", "/buzz.file"],
+				]),
+			],
+			["dnd:", "/dnd.file"],
+			["bla", "/bla.file"],
+		]),
 	],
 	[
 		"folder",
-		new Map([
-			[
-				"fuzz",
-				{
-					path: "/fuzz.file",
-				},
-			],
-			[
-				"buzz",
-				{
-					path: "/buzz.file",
-				},
-			],
+		new Map<string, string | BrowserFolder>([
+			["fuzz", "/fuzz.file"],
+			["buzz", "/buzz.file"],
 		]),
 	],
+	["foo", "/foo.file"],
+	["bar", "/bar.file"],
 ]);
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
@@ -128,7 +118,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 					></InputField>
 				</div>
 
-				<FileBrowser root={root} />
+				<FileBrowser root={root} handler={console.log} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
