@@ -1,16 +1,16 @@
 import { readdirSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-function buildBrowserIndex(name: string, dir: string): string[] {
+function buildBrowserIndex(dir: string): string[] {
 	const dirents = readdirSync(dir, {
 		withFileTypes: true,
 		recursive: true,
 	});
 
 	return dirents
-		.filter((dirent) => dirent.isFile() && dirent.name !== name)
+		.filter((dirent) => dirent.isFile())
 		.map((dirent) => {
-			const path = dirent.parentPath.substring(dir.length);
+			const path = dirent.parentPath.substring(dir.length - 2);
 			return `${path}/${dirent.name}`;
 		});
 }
@@ -23,7 +23,7 @@ function get(req: IncomingMessage, res: ServerResponse): void {
 		res.end();
 	}
 
-	const sceneData = buildBrowserIndex("scenes", "scenes"); // FIXME
+	const sceneData = buildBrowserIndex(`.${req.url}`);
 
 	res.writeHead(200, { "Content-Type": "application/json" });
 	res.end(JSON.stringify(sceneData));

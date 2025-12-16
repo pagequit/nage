@@ -13,40 +13,20 @@ import {
 	ZoomScanIcon,
 } from "./icons/index.ts";
 
-function sceneTreeBuilder(
-	current: BrowserFolder,
-	entries: string[],
-	index: number,
-	ref: string[],
-): void {
-	console.log(entries);
-
-	const next = current.has(entries[0])
-		? (current.get(entries[0]) as BrowserFolder)
-		: (new Map() as BrowserFolder);
-
-	if (entries.length > 1) {
-		current.set(entries.shift() as string, next);
-		sceneTreeBuilder(next, entries, index, ref);
-	} else {
-		// if (entries[0] !== "index.ts") {
-		// 	return;
-		// }
-		current.set(entries[0], entries[0]);
-	}
-}
-async function fetchSceneIndex(): Promise<BrowserFolder> {
+async function fetchScenes(): Promise<BrowserFolder> {
 	const indexRef: string[] = await (await fetch("/api/scenes")).json();
 
-	return indexRef.reduce((root, entry, index) => {
-		const entries = `scenes${entry}`.split("/");
-		sceneTreeBuilder(root, entries, index, indexRef);
+	const scenes = indexRef.reduce((root, entry) => {
+		const [name] = entry.substring(1).split("/");
+		root.set(name, `${name}/data.json`);
 
 		return root;
 	}, new Map() as BrowserFolder);
+
+	return new Map([["scenes", scenes]]);
 }
 
-const root = await fetchSceneIndex();
+const root = await fetchScenes();
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
