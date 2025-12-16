@@ -1,10 +1,10 @@
 import "./main.css";
 import { type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
+import { InputField } from "#/dev/controls/InputField.tsx";
+import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
 import { currentScene } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
-import { InputField } from "#/tools/controls/InputField.tsx";
-import { RangeSlider } from "#/tools/controls/RangeSlider.tsx";
 import { type BrowserFolder, FileBrowser } from "./FileBrowser.tsx";
 import {
 	ArrowAutofitHeightIcon,
@@ -13,31 +13,40 @@ import {
 	ZoomScanIcon,
 } from "./icons/index.ts";
 
-const root = new Map<string, string | BrowserFolder>([
-	[
-		"Brrr",
-		new Map<string, string | BrowserFolder>([
-			[
-				"folder",
-				new Map<string, string | BrowserFolder>([
-					["fuzz", "/fuzz.file"],
-					["buzz", "/buzz.file"],
-				]),
-			],
-			["dnd:", "/dnd.file"],
-			["bla", "/bla.file"],
-		]),
-	],
-	[
-		"folder",
-		new Map<string, string | BrowserFolder>([
-			["fuzz", "/fuzz.file"],
-			["buzz", "/buzz.file"],
-		]),
-	],
-	["foo", "/foo.file"],
-	["bar", "/bar.file"],
-]);
+function sceneTreeBuilder(
+	current: BrowserFolder,
+	entries: string[],
+	index: number,
+	ref: string[],
+): void {
+	console.log(entries);
+
+	const next = current.has(entries[0])
+		? (current.get(entries[0]) as BrowserFolder)
+		: (new Map() as BrowserFolder);
+
+	if (entries.length > 1) {
+		current.set(entries.shift() as string, next);
+		sceneTreeBuilder(next, entries, index, ref);
+	} else {
+		// if (entries[0] !== "index.ts") {
+		// 	return;
+		// }
+		current.set(entries[0], entries[0]);
+	}
+}
+async function fetchSceneIndex(): Promise<BrowserFolder> {
+	const indexRef: string[] = await (await fetch("/api/scenes")).json();
+
+	return indexRef.reduce((root, entry, index) => {
+		const entries = `scenes${entry}`.split("/");
+		sceneTreeBuilder(root, entries, index, indexRef);
+
+		return root;
+	}, new Map() as BrowserFolder);
+}
+
+const root = await fetchSceneIndex();
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;

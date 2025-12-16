@@ -1,15 +1,24 @@
 import { fileURLToPath, URL } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import solidPlugin from "vite-plugin-solid";
+import middleware from "#/dev/server/middleware.ts";
+
+export const host = "localhost";
+export const port = 3080;
+
+function devTools(): Plugin {
+	return {
+		name: "dev-tools",
+		configureServer(server) {
+			server.middlewares.use("/api", middleware);
+		},
+	};
+}
 
 export default defineConfig({
-	server: {
-		host: "localhost",
-		port: 3080,
-		hmr: false,
-	},
+	server: { host, port, hmr: false },
 	build: { target: "esnext" },
-	plugins: [solidPlugin()],
+	plugins: [solidPlugin(), devTools()],
 	resolve: {
 		alias: {
 			"#/": fileURLToPath(new URL("./", import.meta.url)),

@@ -19,7 +19,7 @@ function animate(timestamp: number): void {
 
 (async () => {
 	if (import.meta.env.DEV) {
-		import("#/tools/main.tsx").then((m) => m.use(viewport.gameContainer));
+		import("#/dev/main.tsx").then((m) => m.use(viewport.gameContainer));
 	}
 
 	initViewport();

@@ -1,6 +1,6 @@
 import "./FileBrowser.css";
 import { type Component, createSignal, Index, Show } from "solid-js";
-import { FileIcon, FolderIcon, FolderOpenIcon } from "./icons/index.ts";
+import { FileIcon, FolderIcon, FolderOpenIcon } from "#/dev/icons/index.ts";
 
 export type BrowserFolder = Map<string, string | BrowserFolder>;
 
