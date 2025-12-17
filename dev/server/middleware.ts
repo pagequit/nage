@@ -10,20 +10,21 @@ function buildBrowserIndex(dir: string): string[] {
 	return dirents
 		.filter((dirent) => dirent.isFile())
 		.map((dirent) => {
-			const path = dirent.parentPath.substring(dir.length - 2);
+			const path = dirent.parentPath.substring(dir.length);
 			return `${path}/${dirent.name}`;
 		});
 }
 
 function get(req: IncomingMessage, res: ServerResponse): void {
-	console.log(req.url);
-	const match = req.url?.match(/\/(\w+)$/);
+	const match = req.url?.match(/^\/(\w+)$/);
 	if (!match) {
+		console.error(req.url);
 		res.statusCode = 400;
 		res.end();
+		return;
 	}
 
-	const sceneData = buildBrowserIndex(`.${req.url}`);
+	const sceneData = buildBrowserIndex(match[1]);
 
 	res.writeHead(200, { "Content-Type": "application/json" });
 	res.end(JSON.stringify(sceneData));

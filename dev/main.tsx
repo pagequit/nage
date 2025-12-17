@@ -13,20 +13,21 @@ import {
 	ZoomScanIcon,
 } from "./icons/index.ts";
 
-async function fetchScenes(): Promise<BrowserFolder> {
-	const indexRef: string[] = await (await fetch("/api/scenes")).json();
+async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
+	const indexRef: string[] = await (await fetch(`/api/${dir}`)).json();
 
 	const scenes = indexRef.reduce((root, entry) => {
 		const [name] = entry.substring(1).split("/");
-		root.set(name, `${name}/data.json`);
+		root.set(name, name);
 
 		return root;
 	}, new Map() as BrowserFolder);
 
-	return new Map([["scenes", scenes]]);
+	return new Map([[dir, scenes]]);
 }
 
-const root = await fetchScenes();
+const scenes = await fetchBrowserData("scenes");
+const entites = await fetchBrowserData("entities");
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
@@ -107,7 +108,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 					></InputField>
 				</div>
 
-				<FileBrowser root={root} handler={console.log} />
+				<FileBrowser root={scenes} handler={console.log} />
+				<FileBrowser root={entites} handler={console.log} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
