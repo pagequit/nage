@@ -3,15 +3,16 @@ import { type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
-import { currentScene } from "#/engine/Scene.ts";
-import { setScale, viewport } from "#/engine/Viewport.ts";
-import { type BrowserFolder, FileBrowser } from "./FileBrowser.tsx";
+import { type BrowserFolder, FileBrowser } from "#/dev/FileBrowser.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
 	FileIcon,
 	ZoomScanIcon,
-} from "./icons/index.ts";
+} from "#/dev/icons/index.ts";
+import type { Entity } from "#/engine/Entity";
+import { currentScene, type SceneData } from "#/engine/Scene.ts";
+import { setScale, viewport } from "#/engine/Viewport.ts";
 
 async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 	const indexRef: string[] = await (await fetch(`/api/${dir}`)).json();
@@ -26,8 +27,25 @@ async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 	return new Map([[dir, scenes]]);
 }
 
+function mapSceneEntities(sceneData: SceneData): BrowserFolder {
+	const entites = sceneData.entities.reduce((root, entiry, index) => {
+		root.set(`${entiry.id}:${index}`, `${entiry.id}:${index}`);
+		return root;
+	}, new Map() as BrowserFolder);
+
+	return new Map([["entities", entites]]);
+}
+
 const scenes = await fetchBrowserData("scenes");
-const entites = await fetchBrowserData("entities");
+const entites = mapSceneEntities(currentScene.data);
+
+let activeEntity = null;
+function setActiveEntity(entity: string): void {
+	const [id, index] = entity.split(":");
+	const entities = currentScene.entityMap.get(id)!.entities;
+	activeEntity = entities[parseInt(index)] as Entity<unknown>;
+	console.log(activeEntity.position);
+}
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
@@ -109,7 +127,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<FileBrowser root={scenes} handler={console.log} />
-				<FileBrowser root={entites} handler={console.log} />
+				<FileBrowser root={entites} handler={setActiveEntity} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
