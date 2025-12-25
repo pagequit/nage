@@ -1,3 +1,5 @@
+import { loadImage } from "./loadImage.ts";
+
 export type Sprite = {
 	image: HTMLImageElement;
 	xFrames: number;
@@ -18,6 +20,14 @@ export function createSprite(
 		frameWidth: image.width / xFrames,
 		frameHeight: image.height / yFrames,
 	};
+}
+
+export async function fromSrc(
+	src: string,
+	xFrames: number,
+	yFrames: number,
+): Promise<Sprite> {
+	return createSprite(await loadImage(src), xFrames, yFrames);
 }
 
 export function drawSprite(

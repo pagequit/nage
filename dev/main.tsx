@@ -11,7 +11,7 @@ import {
 	ZoomScanIcon,
 } from "#/dev/icons/index.ts";
 import type { Entity } from "#/engine/Entity";
-import { currentScene, type SceneData } from "#/engine/Scene.ts";
+import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
 
 async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
@@ -42,9 +42,13 @@ const entites = mapSceneEntities(currentScene.data);
 let activeEntity = null;
 function setActiveEntity(entity: string): void {
 	const [id, index] = entity.split(":");
-	const entities = currentScene.entityMap.get(id)!.entities;
+	const entities = currentScene.entityInstanceMap.get(id)!.instances;
 	activeEntity = entities[parseInt(index)] as Entity<unknown>;
-	console.log(activeEntity.position);
+	console.log(activeEntity);
+}
+
+function setCurrentScene(name: string): void {
+	loadScene(name);
 }
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
@@ -126,7 +130,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 					></InputField>
 				</div>
 
-				<FileBrowser root={scenes} handler={console.log} />
+				<FileBrowser root={scenes} handler={setCurrentScene} />
 				<FileBrowser root={entites} handler={setActiveEntity} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>

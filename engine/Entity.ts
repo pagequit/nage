@@ -1,5 +1,7 @@
 import { createVector, type Vector } from "#/lib/Vector.ts";
 
+export type Indirect = never;
+
 export type Entity<T> = {
 	id: string;
 	position: Vector;
@@ -14,10 +16,10 @@ export type Animate<T> = (
 export type Process<T> = (entity: Entity<T>, delta: number) => void;
 
 export const entityMap = new Map<string, Entity<unknown>>();
-export const entityAnimateMap = new Map<string, Animate<never>>();
-export const entityProcessMap = new Map<string, Process<never>>();
+export const entityAnimateMap = new Map<string, Animate<Indirect>>();
+export const entityProcessMap = new Map<string, Process<Indirect>>();
 
-export function useEntity<T>(
+export function useEntity<T extends object>(
 	id: string,
 	data: T,
 ): {
@@ -31,10 +33,10 @@ export function useEntity<T>(
 	});
 
 	return {
-		animate(fn: Animate<T>): void {
+		animate(fn) {
 			entityAnimateMap.set(id, fn);
 		},
-		process(fn: Process<T>): void {
+		process(fn) {
 			entityProcessMap.set(id, fn);
 		},
 	};

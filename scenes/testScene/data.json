@@ -11,7 +11,7 @@
 			}
 		},
 		{
-			"id": "testEntity",
+			"id": "fooEntity",
 			"position": {
 				"x": 16,
 				"y": 16

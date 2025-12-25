@@ -1,0 +1,14 @@
+{
+	"id": "fooScene",
+	"width": 80,
+	"height": 48,
+	"entities": [
+		{
+			"id": "fooEntity",
+			"position": {
+				"x": 24,
+				"y": 16
+			}
+		}
+	]
+}

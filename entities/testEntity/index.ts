@@ -1,3 +1,5 @@
+import charIdle from "#/assets/char-idle.png";
+import charWalk from "#/assets/char-walk.png";
 import { useEntity } from "#/engine/Entity.ts";
 import { viewport } from "#/engine/Viewport.ts";
 import {
@@ -9,8 +11,8 @@ import { loadImage } from "#/lib/loadImage.ts";
 import { createSprite } from "#/lib/Sprite.ts";
 
 const sprites = {
-	idle: createSprite(await loadImage("/assets/char-idle.png"), 2, 4),
-	walk: createSprite(await loadImage("/assets/char-walk.png"), 4, 4),
+	idle: createSprite(await loadImage(charIdle), 2, 4),
+	walk: createSprite(await loadImage(charWalk), 4, 4),
 };
 
 const { animate, process } = useEntity<{
