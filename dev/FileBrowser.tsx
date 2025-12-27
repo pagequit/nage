@@ -1,5 +1,11 @@
 import "./FileBrowser.css";
-import { type Component, createSignal, Index, Show } from "solid-js";
+import {
+	type Accessor,
+	type Component,
+	createSignal,
+	For,
+	Show,
+} from "solid-js";
 import { FileIcon, FolderIcon, FolderOpenIcon } from "#/dev/icons/index.ts";
 
 export type BrowserFolder = Map<string, string | BrowserFolder>;
@@ -11,15 +17,15 @@ function isFolder(entry: string | BrowserFolder): entry is BrowserFolder {
 }
 
 export const FileBrowser: Component<{
-	root: BrowserFolder;
+	root: Accessor<BrowserFolder>;
 	handler: FileHandler;
-}> = ({ root, handler }) => {
+}> = (props) => {
 	const FileEntry: Component<{
 		name: string;
 		path: string;
 	}> = ({ name, path }) => {
 		return (
-			<div class="file-label" onClick={[handler, path]}>
+			<div class="file-label" onClick={[props.handler, path]}>
 				<FileIcon />
 				<span>{name}</span>
 			</div>
@@ -47,31 +53,31 @@ export const FileBrowser: Component<{
 		);
 	};
 
-	const FileList: Component<{ folder: BrowserFolder }> = ({ folder }) => {
+	const FileList: Component<{ folder: BrowserFolder }> = (props) => {
 		return (
 			<ul class="file-list">
-				<Index each={[...folder.entries()]}>
+				<For each={[...props.folder.entries()]}>
 					{(item, index) => {
-						const [name, entry] = item();
+						const [name, entry] = item;
 
 						return (
 							<li class="file-item">
 								{isFolder(entry) ? (
-									<FolderEntry folder={entry} name={name} open={index < 1} />
+									<FolderEntry folder={entry} name={name} open={index() < 1} />
 								) : (
 									<FileEntry name={name} path={entry} />
 								)}
 							</li>
 						);
 					}}
-				</Index>
+				</For>
 			</ul>
 		);
 	};
 
 	return (
 		<div class="file-browser">
-			<FileList folder={root} />
+			<FileList folder={props.root()} />
 		</div>
 	);
 };

@@ -36,8 +36,7 @@ function mapSceneEntities(sceneData: SceneData): BrowserFolder {
 	return new Map([["entities", entites]]);
 }
 
-const scenes = await fetchBrowserData("scenes");
-const entites = mapSceneEntities(currentScene.data);
+const scenesRaw = await fetchBrowserData("scenes");
 
 let activeEntity = null;
 function setActiveEntity(entity: string): void {
@@ -45,10 +44,6 @@ function setActiveEntity(entity: string): void {
 	const entities = currentScene.entityInstanceMap.get(id)!.instances;
 	activeEntity = entities[parseInt(index)] as Entity<unknown>;
 	console.log(activeEntity);
-}
-
-function setCurrentScene(name: string): void {
-	loadScene(name);
 }
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
@@ -77,6 +72,17 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	};
 
 	adjustGameContainer(gameContainer, width());
+
+	const [entities, setEntities] = createSignal(
+		mapSceneEntities(currentScene.data),
+	);
+
+	const [scenes] = createSignal(scenesRaw);
+
+	const setCurrentScene = async (name: string) => {
+		await loadScene(name);
+		setEntities(mapSceneEntities(currentScene.data));
+	};
 
 	onMount(() => {
 		self.addEventListener("resize", () => {
@@ -131,7 +137,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<FileBrowser root={scenes} handler={setCurrentScene} />
-				<FileBrowser root={entites} handler={setActiveEntity} />
+				<FileBrowser root={entities} handler={setActiveEntity} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
