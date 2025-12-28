@@ -28,8 +28,13 @@ async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 }
 
 function mapSceneEntities(sceneData: SceneData): BrowserFolder {
-	const entites = sceneData.entities.reduce((root, entiry, index) => {
-		root.set(`${entiry.id}:${index}`, `${entiry.id}:${index}`);
+	const sets = {};
+	const entites = sceneData.entities.reduce((root, entiry) => {
+		sets[entiry.id] = sets[entiry.id] === undefined ? 0 : sets[entiry.id] + 1;
+		root.set(
+			`${entiry.id}:${sets[entiry.id]}`,
+			`${entiry.id}:${sets[entiry.id]}`,
+		);
 		return root;
 	}, new Map() as BrowserFolder);
 

@@ -76,7 +76,9 @@ function linkScenes(a: string, b: string): void {
 }
 
 export function useScene(data: SceneData): {
-	linkScenes: (ids: string[]) => () => Promise<void>;
+	linkScenes: <T extends readonly string[]>(
+		ids: T,
+	) => (id: T[number]) => Promise<void>;
 	process: (fn: Process) => void;
 } {
 	sceneDataMap.set(data.id, data);
@@ -88,7 +90,9 @@ export function useScene(data: SceneData): {
 				linkScenes(data.id, id);
 			}
 
-			return async () => {};
+			return async (id) => {
+				return changeScene(id);
+			};
 		},
 		process(fn) {
 			sceneProcessMap.set(data.id, (ctx, delta) => {
@@ -100,12 +104,27 @@ export function useScene(data: SceneData): {
 	};
 }
 
+export function changeScene(id: string): Promise<void> {
+	const data = sceneDataMap.get(id)!;
+	const process = sceneProcessMap.get(id)!;
+	const entityInstanceMap = sceneEntiyMap.get(id)!;
+	for (const neighbour of getNeighbours(sceneGraph, id)) {
+		if (!sceneCache.has(neighbour)) {
+			sceneCache.set(neighbour, loadScene(neighbour));
+		}
+	}
+	currentScene.data = data;
+	currentScene.process = process;
+	currentScene.entityInstanceMap = entityInstanceMap;
+}
+
 export async function loadScene(id: string): Promise<void> {
 	await import(`#/scenes/${id}/index.ts`);
 
 	const data = sceneDataMap.get(id)!;
 	const process = sceneProcessMap.get(id)!;
 	const entityInstanceMap = sceneEntiyMap.get(id)!;
+	entityInstanceMap.clear();
 
 	Promise.all(
 		data.entities.map(async (entity: Entity<unknown>) => {
@@ -121,7 +140,7 @@ export async function loadScene(id: string): Promise<void> {
 
 			const instance: Entity<unknown> = {
 				...structuredClone(entityMap.get(entity.id)!),
-				position: entity.position,
+				...structuredClone(entity),
 			};
 
 			entityInstanceMap.get(entity.id)!.instances.push(instance);
