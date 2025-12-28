@@ -6,6 +6,7 @@
 				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
+				"noTsIgnore": "off",
 				"noAssignInExpressions": "off"
 			},
 			"correctness": {

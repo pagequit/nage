@@ -10,7 +10,7 @@ import {
 } from "./Entity.ts";
 
 export type SceneData = {
-	id: string;
+	name: string;
 	width: number;
 	height: number;
 	entities: Array<Entity<unknown>>;
@@ -42,7 +42,7 @@ const sceneGraph: Graph<string> = new Map();
 
 export const currentScene: Scene = {
 	data: {
-		id: "",
+		name: "",
 		width: 0,
 		height: 0,
 		entities: [],
@@ -81,13 +81,13 @@ export function useScene(data: SceneData): {
 	) => (id: T[number]) => Promise<void>;
 	process: (fn: Process) => void;
 } {
-	sceneDataMap.set(data.id, data);
-	sceneEntiyMap.set(data.id, new Map());
+	sceneDataMap.set(data.name, data);
+	sceneEntiyMap.set(data.name, new Map());
 
 	return {
 		linkScenes(ids) {
 			for (const id of ids) {
-				linkScenes(data.id, id);
+				linkScenes(data.name, id);
 			}
 
 			return async (id) => {
@@ -95,7 +95,7 @@ export function useScene(data: SceneData): {
 			};
 		},
 		process(fn) {
-			sceneProcessMap.set(data.id, (ctx, delta) => {
+			sceneProcessMap.set(data.name, (ctx, delta) => {
 				animateEntities(ctx, delta);
 				processEntities(delta);
 				fn(ctx, delta);
@@ -128,22 +128,22 @@ export async function loadScene(id: string): Promise<void> {
 
 	Promise.all(
 		data.entities.map(async (entity: Entity<unknown>) => {
-			await import(`#/entities/${entity.id}/index.ts`);
+			await import(`#/entities/${entity.name}/index.ts`);
 
-			if (!entityInstanceMap.has(entity.id)) {
-				entityInstanceMap.set(entity.id, {
-					animate: entityAnimateMap.get(entity.id) ?? (() => {}),
-					process: entityProcessMap.get(entity.id) ?? (() => {}),
+			if (!entityInstanceMap.has(entity.name)) {
+				entityInstanceMap.set(entity.name, {
+					animate: entityAnimateMap.get(entity.name) ?? (() => {}),
+					process: entityProcessMap.get(entity.name) ?? (() => {}),
 					instances: [],
 				});
 			}
 
 			const instance: Entity<unknown> = {
-				...structuredClone(entityMap.get(entity.id)!),
+				...structuredClone(entityMap.get(entity.name)!),
 				...structuredClone(entity),
 			};
 
-			entityInstanceMap.get(entity.id)!.instances.push(instance);
+			entityInstanceMap.get(entity.name)!.instances.push(instance);
 		}),
 	);
 

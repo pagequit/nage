@@ -3,7 +3,7 @@ import { createVector, type Vector } from "#/lib/Vector.ts";
 export type Indirect = never;
 
 export type Entity<T> = {
-	id: string;
+	name: string;
 	position: Vector;
 } & T;
 
@@ -20,24 +20,24 @@ export const entityAnimateMap = new Map<string, Animate<Indirect>>();
 export const entityProcessMap = new Map<string, Process<Indirect>>();
 
 export function useEntity<T extends object>(
-	id: string,
+	name: string,
 	data: T,
 ): {
 	animate: (fn: Animate<T>) => void;
 	process: (fn: Process<T>) => void;
 } {
-	entityMap.set(id, {
-		id,
+	entityMap.set(name, {
+		name,
 		position: createVector(),
 		...data,
 	});
 
 	return {
 		animate(fn) {
-			entityAnimateMap.set(id, fn);
+			entityAnimateMap.set(name, fn);
 		},
 		process(fn) {
-			entityProcessMap.set(id, fn);
+			entityProcessMap.set(name, fn);
 		},
 	};
 }

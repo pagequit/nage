@@ -1,24 +1,24 @@
 {
-	"id": "testScene",
+	"name": "testScene",
 	"width": 80,
 	"height": 48,
 	"entities": [
 		{
-			"id": "testEntity",
+			"name": "testEntity",
 			"position": {
 				"x": 0,
 				"y": 0
 			}
 		},
 		{
-			"id": "fooEntity",
+			"name": "fooEntity",
 			"position": {
 				"x": 16,
 				"y": 16
 			}
 		},
 		{
-			"id": "testEntity",
+			"name": "testEntity",
 			"position": {
 				"x": 32,
 				"y": 32

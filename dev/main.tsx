@@ -1,5 +1,5 @@
 import "./main.css";
-import { type Component, createSignal, onMount } from "solid-js";
+import { type Accessor, type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
@@ -19,7 +19,7 @@ async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 
 	const scenes = indexRef.reduce((root, entry) => {
 		const [name] = entry.substring(1).split("/");
-		root.set(name, name);
+		root.set(name, { path: name, isActive: false });
 
 		return root;
 	}, new Map() as BrowserFolder);
@@ -28,13 +28,14 @@ async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 }
 
 function mapSceneEntities(sceneData: SceneData): BrowserFolder {
-	const sets = {};
+	const sets: Record<string, number> = {};
 	const entites = sceneData.entities.reduce((root, entiry) => {
-		sets[entiry.id] = sets[entiry.id] === undefined ? 0 : sets[entiry.id] + 1;
-		root.set(
-			`${entiry.id}:${sets[entiry.id]}`,
-			`${entiry.id}:${sets[entiry.id]}`,
-		);
+		sets[entiry.name] =
+			sets[entiry.name] === undefined ? 0 : sets[entiry.name] + 1;
+		root.set(`${entiry.name}:${sets[entiry.name]}`, {
+			path: `${entiry.name}:${sets[entiry.name]}`,
+			isActive: false,
+		});
 		return root;
 	}, new Map() as BrowserFolder);
 
@@ -42,14 +43,6 @@ function mapSceneEntities(sceneData: SceneData): BrowserFolder {
 }
 
 const scenesRaw = await fetchBrowserData("scenes");
-
-let activeEntity = null;
-function setActiveEntity(entity: string): void {
-	const [id, index] = entity.split(":");
-	const entities = currentScene.entityInstanceMap.get(id)!.instances;
-	activeEntity = entities[parseInt(index)] as Entity<unknown>;
-	console.log(activeEntity);
-}
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
@@ -82,10 +75,43 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		mapSceneEntities(currentScene.data),
 	);
 
-	const [scenes] = createSignal(scenesRaw);
+	const mapActive = (
+		root: string,
+		path: string,
+		accessor: Accessor<BrowserFolder>,
+	): BrowserFolder => {
+		return new Map([
+			[
+				root,
+				(accessor().get(root) as BrowserFolder)
+					.entries()
+					.reduce((acc, [key, value]) => {
+						acc.set(key, {
+							// @ts-ignore: value is BrowserFile
+							path: value.path,
+							isActive: path === key,
+						});
 
-	const setCurrentScene = async (name: string) => {
-		await loadScene(name);
+						return acc;
+					}, new Map() as BrowserFolder),
+			],
+		]);
+	};
+
+	let activeEntity = null;
+	const setActiveEntity = (path: string): void => {
+		const [id, index] = path.split(":");
+		const instances = currentScene.entityInstanceMap.get(id)!.instances;
+		activeEntity = instances[parseInt(index)] as Entity<unknown>;
+		setEntities(mapActive("entities", path, entities));
+		console.log(activeEntity);
+	};
+
+	const [scenes, setScenes] = createSignal(scenesRaw);
+
+	const setCurrentScene = async (path: string) => {
+		await loadScene(path);
+		setScenes(mapActive("scenes", path, scenes));
 		setEntities(mapSceneEntities(currentScene.data));
 	};
 
@@ -116,7 +142,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				<div class="scene-props">
 					<InputField
 						name="file"
-						value={currentScene.data.id}
+						value={currentScene.data.name}
 						icon={FileIcon()}
 					></InputField>
 					<InputField

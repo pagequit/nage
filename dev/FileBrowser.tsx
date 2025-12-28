@@ -8,11 +8,16 @@ import {
 } from "solid-js";
 import { FileIcon, FolderIcon, FolderOpenIcon } from "#/dev/icons/index.ts";
 
-export type BrowserFolder = Map<string, string | BrowserFolder>;
+export type BrowserFile = {
+	path: string;
+	isActive: boolean;
+};
+
+export type BrowserFolder = Map<string, BrowserFile | BrowserFolder>;
 
 export type FileHandler = (path: string) => void;
 
-function isFolder(entry: string | BrowserFolder): entry is BrowserFolder {
+function isFolder(entry: BrowserFile | BrowserFolder): entry is BrowserFolder {
 	return typeof (entry as BrowserFolder).size === "number";
 }
 
@@ -22,10 +27,16 @@ export const FileBrowser: Component<{
 }> = (props) => {
 	const FileEntry: Component<{
 		name: string;
-		path: string;
-	}> = ({ name, path }) => {
+		entry: BrowserFile;
+	}> = ({ name, entry }) => {
 		return (
-			<div class="file-label" onClick={[props.handler, path]}>
+			<div
+				class="file-label"
+				classList={{
+					active: entry.isActive,
+				}}
+				onClick={() => props.handler(entry.path)}
+			>
 				<FileIcon />
 				<span>{name}</span>
 			</div>
@@ -65,7 +76,7 @@ export const FileBrowser: Component<{
 								{isFolder(entry) ? (
 									<FolderEntry folder={entry} name={name} open={index() < 1} />
 								) : (
-									<FileEntry name={name} path={entry} />
+									<FileEntry name={name} entry={entry} />
 								)}
 							</li>
 						);
