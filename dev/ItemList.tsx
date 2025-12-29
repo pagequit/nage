@@ -5,49 +5,64 @@ export type ListItem = { label: string; isActive: boolean };
 
 export type ItemHandler = (item: ListItem, index: number) => void;
 
-export type Direction = undefined | "asc" | "desc";
+export type Direction = "default" | "asc" | "desc";
 
 export function useSort(
 	items: Array<ListItem>,
-): (direction?: Direction) => Array<ListItem> {
-	const itemsRef = [...items];
+): [
+	(direction?: Direction) => Array<ListItem>,
+	(newItems: Array<ListItem>) => void,
+] {
+	let itemsRef = items;
 
-	return (direction) => {
-		if (!direction) {
-			return [...itemsRef];
-		}
-		const newItems = [...itemsRef];
-
-		newItems.sort((a, b) => {
-			const labelA = a.label.toLocaleLowerCase();
-			const labelB = b.label.toLocaleLowerCase();
-
-			if (labelA < labelB) {
-				return direction === "asc" ? -1 : 1;
+	return [
+		(direction = "default") => {
+			if (direction === "default") {
+				return [...itemsRef];
 			}
+			const newItems = [...itemsRef];
 
-			if (labelA > labelB) {
-				return direction === "asc" ? 1 : -1;
-			}
+			newItems.sort((a, b) => {
+				const labelA = a.label.toLocaleLowerCase();
+				const labelB = b.label.toLocaleLowerCase();
 
-			return 0;
-		});
+				if (labelA < labelB) {
+					return direction === "asc" ? -1 : 1;
+				}
 
-		return newItems;
-	};
+				if (labelA > labelB) {
+					return direction === "asc" ? 1 : -1;
+				}
+
+				return 0;
+			});
+
+			return newItems;
+		},
+		(newItems) => {
+			itemsRef = newItems;
+		},
+	];
 }
 
-export function useDirection(initialDirection?: Direction): () => Direction {
+export function useDirection(
+	initialDirection: Direction = "default",
+): (forcedDirection?: Direction) => Direction {
 	let direction: Direction = initialDirection;
 
-	return () => {
+	return (forcedDirection) => {
+		if (forcedDirection) {
+			direction = forcedDirection;
+			return direction;
+		}
+
 		switch (direction) {
 			case "asc": {
 				direction = "desc";
 				break;
 			}
 			case "desc": {
-				direction = undefined;
+				direction = "default";
 				break;
 			}
 			default: {

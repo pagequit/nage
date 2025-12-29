@@ -172,7 +172,24 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				<FileBrowser root={scenes} handler={setCurrentScene} />
 				<FileBrowser root={entities} handler={setActiveEntity} />
 
-				<RemoteItemList fetchItems={async () => []} />
+				<RemoteItemList
+					name={"Sample list"}
+					handler={console.log}
+					fetch={async () => [
+						{
+							label: "foo",
+							isActive: false,
+						},
+						{
+							label: "bar",
+							isActive: false,
+						},
+						{
+							label: "lol",
+							isActive: true,
+						},
+					]}
+				/>
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
