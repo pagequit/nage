@@ -4,7 +4,6 @@ import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
 import { type BrowserFolder, FileBrowser } from "#/dev/FileBrowser.tsx";
-import type { ListItem } from "#/dev/ItemList.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
@@ -14,6 +13,7 @@ import {
 import type { Entity } from "#/engine/Entity";
 import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
+import type { ListItem } from "./ItemList";
 import { RemoteItemList } from "./RemoteItemList";
 
 async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
@@ -29,13 +29,13 @@ async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 	return new Map([[dir, scenes]]);
 }
 
-function mapSceneEntities(sceneData: SceneData): BrowserFolder {
+function mapSceneEntitiesOld(sceneData: SceneData): BrowserFolder {
 	const sets: Record<string, number> = {};
-	const entites = sceneData.entities.reduce((root, entiry) => {
-		sets[entiry.name] =
-			sets[entiry.name] === undefined ? 0 : sets[entiry.name] + 1;
-		root.set(`${entiry.name}:${sets[entiry.name]}`, {
-			path: `${entiry.name}:${sets[entiry.name]}`,
+	const entites = sceneData.entities.reduce((root, entity) => {
+		sets[entity.name] =
+			sets[entity.name] === undefined ? 0 : sets[entity.name] + 1;
+		root.set(`${entity.name}:${sets[entity.name]}`, {
+			path: `${entity.name}:${sets[entity.name]}`,
 			isActive: false,
 		});
 		return root;
@@ -45,6 +45,19 @@ function mapSceneEntities(sceneData: SceneData): BrowserFolder {
 }
 
 const scenesRaw = await fetchBrowserData("scenes");
+
+function mapSceneEntities(sceneData: SceneData): Array<ListItem> {
+	const sets: Record<string, number> = {};
+	return sceneData.entities.map((entity, index) => {
+		sets[entity.name] =
+			sets[entity.name] === undefined ? 0 : sets[entity.name] + 1;
+		return {
+			label: entity.name,
+			isActive: false,
+			index,
+		};
+	});
+}
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
@@ -101,13 +114,22 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	};
 
 	let activeEntity = null;
-	const setActiveEntity = (path: string): void => {
-		const [id, index] = path.split(":");
-		const instances = currentScene.entityInstanceMap.get(id)!.instances;
-		activeEntity = instances[parseInt(index)] as Entity<unknown>;
-		setEntities(mapActive("entities", path, entities));
+	const setActiveEntity = (entityItem: ListItem & { index: number }): void => {
+		const instances = currentScene.entityInstanceMap.get(
+			entityItem.label,
+		)!.instances;
+		console.log(entityItem);
+		activeEntity = instances[entityItem.index] as Entity<unknown>;
+		// setEntities(mapActive("entities", path, entities));
 		console.log(activeEntity);
 	};
+	// const setActiveEntity = (path: string): void => {
+	// 	const [id, index] = path.split(":");
+	// 	const instances = currentScene.entityInstanceMap.get(id)!.instances;
+	// 	activeEntity = instances[parseInt(index)] as Entity<unknown>;
+	// 	setEntities(mapActive("entities", path, entities));
+	// 	console.log(activeEntity);
+	// };
 
 	const [scenes, setScenes] = createSignal(scenesRaw);
 
@@ -170,25 +192,11 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<FileBrowser root={scenes} handler={setCurrentScene} />
-				<FileBrowser root={entities} handler={setActiveEntity} />
 
 				<RemoteItemList
-					name={"Sample list"}
-					handler={console.log}
-					fetch={async () => [
-						{
-							label: "foo",
-							isActive: false,
-						},
-						{
-							label: "bar",
-							isActive: false,
-						},
-						{
-							label: "lol",
-							isActive: true,
-						},
-					]}
+					name={"Entities"}
+					handler={setActiveEntity}
+					fetch={async () => entities()}
 				/>
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
