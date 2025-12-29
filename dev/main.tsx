@@ -4,6 +4,7 @@ import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
 import { type BrowserFolder, FileBrowser } from "#/dev/FileBrowser.tsx";
+import type { ListItem } from "#/dev/ItemList.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
@@ -13,6 +14,7 @@ import {
 import type { Entity } from "#/engine/Entity";
 import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
+import { RemoteItemList } from "./RemoteItemList";
 
 async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 	const indexRef: string[] = await (await fetch(`/api/${dir}`)).json();
@@ -169,6 +171,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 				<FileBrowser root={scenes} handler={setCurrentScene} />
 				<FileBrowser root={entities} handler={setActiveEntity} />
+
+				<RemoteItemList fetchItems={async () => []} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>

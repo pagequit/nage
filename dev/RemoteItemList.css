@@ -1,0 +1,50 @@
+.remote-item-list {
+	border-radius: var(--sp-1);
+
+	button {
+		color: inherit;
+		border-radius: var(--sp-1);
+		border: none;
+		background: transparent;
+		padding: var(--sp-1);
+		margin-left: var(--sp-1);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	button:hover {
+		background: var(--c-bg-3);
+	}
+
+	svg {
+		width: 1.5em;
+		height: 1.5em;
+	}
+}
+
+.remote-item-list-header {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	border-bottom: 1px solid var(--c-fg-3);
+}
+
+.remote-item-list-label {
+	padding-left: var(--sp-1);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	width: fit-content;
+	border-radius: var(--sp-1);
+
+	&:hover {
+		background: var(--c-bg-3);
+	}
+
+	svg {
+		margin-left: var(--sp-1);
+		width: 0.875em;
+		height: 0.875em;
+	}
+}

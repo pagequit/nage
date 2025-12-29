@@ -31,7 +31,7 @@ export const FileBrowser: Component<{
 	}> = ({ name, entry }) => {
 		return (
 			<div
-				class="file-label"
+				class="file-browser-label"
 				classList={{
 					active: entry.isActive,
 				}}
@@ -52,7 +52,7 @@ export const FileBrowser: Component<{
 
 		return (
 			<>
-				<div class="file-label" onClick={() => setIsOpen(!isOpen())}>
+				<div class="file-browser-label" onClick={() => setIsOpen(!isOpen())}>
 					{isOpen() ? <FolderOpenIcon /> : <FolderIcon />}
 					<span>{name}</span>
 				</div>
@@ -66,13 +66,13 @@ export const FileBrowser: Component<{
 
 	const FileList: Component<{ folder: BrowserFolder }> = (props) => {
 		return (
-			<ul class="file-list">
+			<ul class="file-browser-list">
 				<For each={[...props.folder.entries()]}>
 					{(item, index) => {
 						const [name, entry] = item;
 
 						return (
-							<li class="file-item">
+							<li class="file-browser-item">
 								{isFolder(entry) ? (
 									<FolderEntry folder={entry} name={name} open={index() < 1} />
 								) : (

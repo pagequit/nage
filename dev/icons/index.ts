@@ -1,5 +1,9 @@
 export * from "./ArrowAutofitHeight.tsx";
 export * from "./ArrowAutofitWidth.tsx";
+export * from "./ArrowNarrowDown.tsx";
+export * from "./ArrowNarrowUp.tsx";
+export * from "./ArrowsSort.tsx";
+export * from "./ChevronDown.tsx";
 export * from "./File.tsx";
 export * from "./FileDelta.tsx";
 export * from "./FileMusic.tsx";
@@ -16,6 +20,7 @@ export * from "./Polygon.tsx";
 export * from "./Refresh.tsx";
 export * from "./RefreshAlert.tsx";
 export * from "./RefreshDot.tsx";
+export * from "./Reload.tsx";
 export * from "./Script.tsx";
 export * from "./StackBackward.tsx";
 export * from "./StackForward.tsx";

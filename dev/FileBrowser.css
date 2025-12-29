@@ -3,18 +3,18 @@
 	margin-left: calc(var(--sp-2) * -1);
 }
 
-.file-list {
+.file-browser-list {
 	margin: 0;
 	list-style: none;
 	padding: 0 0 0 var(--sp-2);
 }
 
-.file-item {
+.file-brwoser-item {
 	display: flex;
 	flex-flow: column nowrap;
 }
 
-.file-label {
+.file-browser-label {
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
