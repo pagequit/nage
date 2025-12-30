@@ -4,17 +4,15 @@ import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
 import { type BrowserFolder, FileBrowser } from "#/dev/FileBrowser.tsx";
+import { ItemList, type ListItem } from "#/dev/ItemList.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
 	FileIcon,
 	ZoomScanIcon,
 } from "#/dev/icons/index.ts";
-import type { Entity } from "#/engine/Entity";
 import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
-import type { ListItem } from "./ItemList";
-import { RemoteItemList } from "./RemoteItemList";
 
 async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 	const indexRef: string[] = await (await fetch(`/api/${dir}`)).json();
@@ -160,11 +158,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 				<FileBrowser root={scenes} handler={setCurrentScene} />
 
-				<RemoteItemList
-					name={"Entities"}
-					handler={console.log}
-					items={entities}
-				/>
+				<ItemList name={"Entities"} handler={console.log} items={entities} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
