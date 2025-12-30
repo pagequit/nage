@@ -1,9 +1,8 @@
 import "./main.css";
-import { type Accessor, type Component, createSignal, onMount } from "solid-js";
+import { type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
-import { type BrowserFolder, FileBrowser } from "#/dev/FileBrowser.tsx";
 import { ItemList, type ListItem } from "#/dev/ItemList.tsx";
 import {
 	ArrowAutofitHeightIcon,
@@ -14,20 +13,15 @@ import {
 import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
 
-async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
-	const indexRef: string[] = await (await fetch(`/api/${dir}`)).json();
+async function fetchScenes(): Promise<Array<ListItem>> {
+	const indexRef: string[] = await (await fetch(`/api/scenes`)).json();
+	const items = indexRef.filter((value) => value.includes("index"));
 
-	const scenes = indexRef.reduce((root, entry) => {
-		const [name] = entry.substring(1).split("/");
-		root.set(name, { path: name, isActive: false });
-
-		return root;
-	}, new Map() as BrowserFolder);
-
-	return new Map([[dir, scenes]]);
+	return items.map((value) => {
+		const [label] = value.substring(1).split("/");
+		return { label, isActive: false };
+	});
 }
-
-const scenesRaw = await fetchBrowserData("scenes");
 
 function mapSceneEntities(sceneData: SceneData): Array<ListItem> {
 	const sets: Record<string, number> = {};
@@ -45,6 +39,8 @@ function mapSceneEntities(sceneData: SceneData): Array<ListItem> {
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
 }
+
+const scenesRaw = await fetchScenes();
 
 const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	gameContainer,
@@ -73,34 +69,10 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		mapSceneEntities(currentScene.data),
 	);
 
-	const mapActive = (
-		root: string,
-		path: string,
-		accessor: Accessor<BrowserFolder>,
-	): BrowserFolder => {
-		return new Map([
-			[
-				root,
-				(accessor().get(root) as BrowserFolder)
-					.entries()
-					.reduce((acc, [key, value]) => {
-						acc.set(key, {
-							// @ts-ignore: value is BrowserFile
-							path: value.path,
-							isActive: path === key,
-						});
+	const [scenes] = createSignal(scenesRaw);
 
-						return acc;
-					}, new Map() as BrowserFolder),
-			],
-		]);
-	};
-
-	const [scenes, setScenes] = createSignal(scenesRaw);
-
-	const setCurrentScene = async (path: string) => {
-		await loadScene(path);
-		setScenes(mapActive("scenes", path, scenes));
+	const setCurrentScene = async ({ label: name }: ListItem) => {
+		await loadScene(name);
 		setEntities(mapSceneEntities(currentScene.data));
 	};
 
@@ -156,9 +128,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 					></InputField>
 				</div>
 
-				<FileBrowser root={scenes} handler={setCurrentScene} />
-
-				<ItemList name={"Entities"} handler={console.log} items={entities} />
+				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
+				<ItemList name="Entities" handler={console.log} items={entities} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
