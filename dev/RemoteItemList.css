@@ -24,8 +24,8 @@
 }
 
 .remote-item-list-header {
-	display: grid;
-	grid-template-columns: 1fr auto auto;
+	display: flex;
+	justify-content: space-between;
 	border-bottom: 1px solid var(--c-fg-3);
 }
 

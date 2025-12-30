@@ -1,39 +1,95 @@
 import "./RemoteItemList.css";
-import { type Component, createSignal, Match, Show, Switch } from "solid-js";
 import {
-	type Direction,
-	type ItemHandler,
-	ItemList,
-	type ListItem,
-	useDirection,
-	useSort,
-} from "#/dev/ItemList.tsx";
+	type Accessor,
+	type Component,
+	createEffect,
+	createSignal,
+	Match,
+	Show,
+	type Signal,
+	Switch,
+} from "solid-js";
+import { type ItemHandler, ItemList, type ListItem } from "#/dev/ItemList.tsx";
 import {
 	ArrowNarrowDownIcon,
 	ArrowNarrowUpIcon,
 	ArrowsSortIcon,
 	ChevronDownIcon,
-	ReloadIcon,
 } from "#/dev/icons/index.ts";
+
+export type Direction = "default" | "asc" | "desc";
+
+function useDirection(
+	signal: Signal<Direction>,
+): [Accessor<Direction>, (forcedDirection?: Direction) => Direction] {
+	const [direction, setDirection] = signal;
+
+	return [
+		direction,
+		(forcedDirection) => {
+			if (forcedDirection) {
+				setDirection(forcedDirection);
+				return direction();
+			}
+
+			switch (direction()) {
+				case "asc": {
+					setDirection("desc");
+					break;
+				}
+				case "desc": {
+					setDirection("default");
+					break;
+				}
+				default: {
+					setDirection("asc");
+				}
+			}
+
+			return direction();
+		},
+	];
+}
 
 export const RemoteItemList: Component<{
 	name: string;
-	fetch: () => Promise<Array<ListItem>>;
+	items: Accessor<Array<ListItem>>;
 	handler: ItemHandler;
 }> = (props) => {
 	const [showList, setShowList] = createSignal(true);
-	const [items, setItems] = createSignal<Array<ListItem>>([]);
-	const [direction, setDirection] = createSignal<Direction>("default");
-	const [sorted, setSorted] = useSort([]);
-	const toggleDirection = useDirection();
+	const [items, setItems] = createSignal([...props.items()]);
+	const [direction, toggleDirection] = useDirection(
+		createSignal<Direction>("default"),
+	);
 
-	const fetchItems = () => {
-		props.fetch().then((items) => {
-			setSorted(items);
-			setItems(sorted(direction()));
+	createEffect(() => {
+		sortItems(props.items(), direction());
+	});
+
+	const sortItems = (items: Array<ListItem>, direction: Direction) => {
+		if (direction === "default") {
+			setItems([...props.items()]);
+			return;
+		}
+
+		const newItems = [...items];
+		newItems.sort((a, b) => {
+			const labelA = a.label.toLocaleLowerCase();
+			const labelB = b.label.toLocaleLowerCase();
+
+			if (labelA < labelB) {
+				return direction === "asc" ? -1 : 1;
+			}
+
+			if (labelA > labelB) {
+				return direction === "asc" ? 1 : -1;
+			}
+
+			return 0;
 		});
+
+		setItems(newItems);
 	};
-	fetchItems();
 
 	return (
 		<div class="remote-item-list">
@@ -49,12 +105,11 @@ export const RemoteItemList: Component<{
 					{props.name}
 					<ChevronDownIcon />
 				</div>
+
 				<button
 					type="button"
 					onClick={() => {
-						const direction = toggleDirection();
-						setDirection(direction);
-						setItems(sorted(direction));
+						sortItems(items(), toggleDirection());
 					}}
 				>
 					<Switch fallback={<ArrowsSortIcon />}>
@@ -65,9 +120,6 @@ export const RemoteItemList: Component<{
 							<ArrowNarrowDownIcon />
 						</Match>
 					</Switch>
-				</button>
-				<button type="button" onClick={fetchItems}>
-					<ReloadIcon />
 				</button>
 			</div>
 			<Show when={showList()}>

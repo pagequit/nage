@@ -29,21 +29,6 @@ async function fetchBrowserData(dir: string): Promise<BrowserFolder> {
 	return new Map([[dir, scenes]]);
 }
 
-function mapSceneEntitiesOld(sceneData: SceneData): BrowserFolder {
-	const sets: Record<string, number> = {};
-	const entites = sceneData.entities.reduce((root, entity) => {
-		sets[entity.name] =
-			sets[entity.name] === undefined ? 0 : sets[entity.name] + 1;
-		root.set(`${entity.name}:${sets[entity.name]}`, {
-			path: `${entity.name}:${sets[entity.name]}`,
-			isActive: false,
-		});
-		return root;
-	}, new Map() as BrowserFolder);
-
-	return new Map([["entities", entites]]);
-}
-
 const scenesRaw = await fetchBrowserData("scenes");
 
 function mapSceneEntities(sceneData: SceneData): Array<ListItem> {
@@ -113,24 +98,6 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		]);
 	};
 
-	let activeEntity = null;
-	const setActiveEntity = (entityItem: ListItem & { index: number }): void => {
-		const instances = currentScene.entityInstanceMap.get(
-			entityItem.label,
-		)!.instances;
-		console.log(entityItem);
-		activeEntity = instances[entityItem.index] as Entity<unknown>;
-		// setEntities(mapActive("entities", path, entities));
-		console.log(activeEntity);
-	};
-	// const setActiveEntity = (path: string): void => {
-	// 	const [id, index] = path.split(":");
-	// 	const instances = currentScene.entityInstanceMap.get(id)!.instances;
-	// 	activeEntity = instances[parseInt(index)] as Entity<unknown>;
-	// 	setEntities(mapActive("entities", path, entities));
-	// 	console.log(activeEntity);
-	// };
-
 	const [scenes, setScenes] = createSignal(scenesRaw);
 
 	const setCurrentScene = async (path: string) => {
@@ -195,8 +162,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 				<RemoteItemList
 					name={"Entities"}
-					handler={setActiveEntity}
-					fetch={async () => entities()}
+					handler={console.log}
+					items={entities}
 				/>
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
