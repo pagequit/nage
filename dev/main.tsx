@@ -3,7 +3,7 @@ import { type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
-import { ItemList, type ListItem, mapActiveItem } from "#/dev/ItemList.tsx";
+import { ItemList, type ItemsRef } from "#/dev/ItemList.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
@@ -13,27 +13,15 @@ import {
 import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
 
-async function fetchScenes(): Promise<Array<ListItem>> {
+async function fetchScenes(): Promise<string[]> {
 	const indexRef: string[] = await (await fetch(`/api/scenes`)).json();
 	const items = indexRef.filter((value) => value.includes("index"));
 
-	return items.map((value) => {
-		const [label] = value.substring(1).split("/");
-		return { label, isActive: false };
-	});
+	return items.map((i) => i.substring(1).split("/")[0]);
 }
 
-function mapSceneEntities(sceneData: SceneData): Array<ListItem> {
-	const sets: Record<string, number> = {};
-	return sceneData.entities.map((entity, index) => {
-		sets[entity.name] =
-			sets[entity.name] === undefined ? 0 : sets[entity.name] + 1;
-		return {
-			label: entity.name,
-			isActive: false,
-			index,
-		};
-	});
+function mapSceneEntities(sceneData: SceneData): string[] {
+	return sceneData.entities.map((entity) => entity.name);
 }
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
@@ -65,45 +53,30 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 	adjustGameContainer(gameContainer, width());
 
-	const [scenes, setScenes] = createSignal(
-		scenesRaw.map((scene) => ({
-			...scene,
-			isActive: scene.label === currentScene.data.name,
-		})),
-	);
+	const [scenes] = createSignal(scenesRaw);
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
 
-	const setCurrentScene = async (
-		items: Array<ListItem>,
-		index: number,
-	): Promise<void> => {
-		setScenes(mapActiveItem(items, index));
-
-		await loadScene(items[index].label);
+	const setCurrentScene = async (items: ItemsRef): Promise<void> => {
+		const name = items.find((ref) => ref.item.isActive)!.item.label;
+		await loadScene(name);
 		setEntities(mapSceneEntities(currentScene.data));
 	};
 
-	const setActiveEntity = (items: Array<ListItem>, index: number): void => {
-		const entities = mapActiveItem(items, index);
-		setEntities(entities);
+	const setActiveEntity = (items: ItemsRef): void => {
+		const activeRef = items.find((ref) => ref.item.isActive)!;
+		const instances = currentScene.entityInstanceMap.get(
+			activeRef.item.label,
+		)!.instances;
 
-		const entityName = items[index].label;
-		const instances = currentScene.entityInstanceMap.get(entityName)!.instances;
+		const entityRefs = items.filter(
+			(ref) => ref.item.label === activeRef.item.label,
+		);
+		const instance =
+			instances[entityRefs.findIndex((ref) => ref.item.isActive)];
 
-		let instanceIndex = 0;
-		let indexCount = 0;
-		for (const item of entities) {
-			if (item.label === entityName) {
-				if (item.isActive) {
-					instanceIndex = indexCount;
-				}
-				indexCount += 1;
-			}
-		}
-
-		console.log(instances[instanceIndex].position);
+		console.log(instance.position);
 	};
 
 	onMount(() => {

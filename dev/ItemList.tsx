@@ -19,17 +19,19 @@ import {
 
 export type ListItem = { label: string; isActive: boolean };
 
-export type ItemHandler = (list: Array<ListItem>, index: number) => void;
+export type ItemsRef = Array<{ item: ListItem; index: number }>;
+
+export type ItemHandler = (items: ItemsRef) => void;
 
 export type Direction = "default" | "asc" | "desc";
 
-export function mapActiveItem(
-	items: Array<ListItem>,
-	index: number,
-): Array<ListItem> {
-	return items.map((item, idx) => ({
-		...item,
-		isActive: idx === index,
+function mapActiveItem(items: ItemsRef, index: number): ItemsRef {
+	return items.map((ref, idx) => ({
+		item: {
+			...ref.item,
+			isActive: idx === index,
+		},
+		index: ref.index,
 	}));
 }
 
@@ -65,31 +67,44 @@ function useDirection(
 	];
 }
 
+function createItemsRef(items: Array<ListItem>): ItemsRef {
+	return items.map((item, index) => ({
+		item,
+		index,
+	}));
+}
+
 export const ItemList: Component<{
 	name: string;
-	items: Accessor<Array<ListItem>>;
+	items: Accessor<string[]>;
 	handler: ItemHandler;
 }> = (props) => {
 	const [showList, setShowList] = createSignal(true);
-	const [items, setItems] = createSignal([...props.items()]);
+	const [items, setItems] = createSignal(
+		createItemsRef(props.items().map((i) => ({ label: i, isActive: false }))),
+	);
 	const [direction, toggleDirection] = useDirection(
 		createSignal<Direction>("default"),
 	);
 
 	createEffect(() => {
-		sortItems(props.items(), direction());
+		sortItems(
+			createItemsRef(props.items().map((i) => ({ label: i, isActive: false }))),
+			direction(),
+		);
 	});
 
-	const sortItems = (items: Array<ListItem>, direction: Direction) => {
+	const sortItems = (items: ItemsRef, direction: Direction) => {
+		const newItems = [...items];
 		if (direction === "default") {
-			setItems([...props.items()]);
+			newItems.sort((a, b) => a.index - b.index);
+			setItems(newItems);
 			return;
 		}
 
-		const newItems = [...items];
 		newItems.sort((a, b) => {
-			const labelA = a.label.toLocaleLowerCase();
-			const labelB = b.label.toLocaleLowerCase();
+			const labelA = a.item.label.toLocaleLowerCase();
+			const labelB = b.item.label.toLocaleLowerCase();
 
 			if (labelA < labelB) {
 				return direction === "asc" ? -1 : 1;
@@ -101,7 +116,6 @@ export const ItemList: Component<{
 
 			return 0;
 		});
-
 		setItems(newItems);
 	};
 
@@ -140,17 +154,19 @@ export const ItemList: Component<{
 			<Show when={showList()}>
 				<ul>
 					<For each={items()}>
-						{(item, index) => {
+						{(ref, index) => {
 							return (
 								<li
 									classList={{
-										active: item.isActive,
+										active: ref.item.isActive,
 									}}
 									onClick={() => {
-										props.handler(items(), index());
+										const newItems = mapActiveItem(items(), index());
+										setItems(newItems);
+										props.handler(newItems);
 									}}
 								>
-									{item.label}
+									{ref.item.label}
 								</li>
 							);
 						}}
