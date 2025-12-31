@@ -23,6 +23,16 @@ export type ItemHandler = (list: Array<ListItem>, index: number) => void;
 
 export type Direction = "default" | "asc" | "desc";
 
+export function mapActiveItem(
+	items: Array<ListItem>,
+	index: number,
+): Array<ListItem> {
+	return items.map((item, idx) => ({
+		...item,
+		isActive: idx === index,
+	}));
+}
+
 function useDirection(
 	signal: Signal<Direction>,
 ): [Accessor<Direction>, (forcedDirection?: Direction) => Direction] {
@@ -136,7 +146,9 @@ export const ItemList: Component<{
 									classList={{
 										active: item.isActive,
 									}}
-									onClick={() => props.handler(items(), index())}
+									onClick={() => {
+										props.handler(items(), index());
+									}}
 								>
 									{item.label}
 								</li>

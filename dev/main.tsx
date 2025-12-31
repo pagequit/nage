@@ -1,9 +1,9 @@
 import "./main.css";
-import { type Component, createSignal, onMount, type Setter } from "solid-js";
+import { type Component, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
-import { ItemList, type ListItem } from "#/dev/ItemList.tsx";
+import { ItemList, type ListItem, mapActiveItem } from "#/dev/ItemList.tsx";
 import {
 	ArrowAutofitHeightIcon,
 	ArrowAutofitWidthIcon,
@@ -38,13 +38,6 @@ function mapSceneEntities(sceneData: SceneData): Array<ListItem> {
 
 function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
-}
-
-function mapActiveItem(items: Array<ListItem>, index: number): Array<ListItem> {
-	return items.map((item, idx) => ({
-		...item,
-		isActive: idx === index,
-	}));
 }
 
 const scenesRaw = await fetchScenes();
@@ -83,22 +76,34 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	);
 
 	const setCurrentScene = async (
-		scenes: Array<ListItem>,
+		items: Array<ListItem>,
 		index: number,
 	): Promise<void> => {
-		setScenes(mapActiveItem(scenes, index));
+		setScenes(mapActiveItem(items, index));
 
-		await loadScene(scenes[index].label);
+		await loadScene(items[index].label);
 		setEntities(mapSceneEntities(currentScene.data));
 	};
 
-	const setActiveEntity = (entities: Array<ListItem>, index: number): void => {
-		setEntities(mapActiveItem(entities, index));
+	const setActiveEntity = (items: Array<ListItem>, index: number): void => {
+		const entities = mapActiveItem(items, index);
+		setEntities(entities);
 
-		const instances = currentScene.entityInstanceMap.get(
-			entities[index].label,
-		)!.instances;
-		console.log(instances);
+		const entityName = items[index].label;
+		const instances = currentScene.entityInstanceMap.get(entityName)!.instances;
+
+		let instanceIndex = 0;
+		let indexCount = 0;
+		for (const item of entities) {
+			if (item.label === entityName) {
+				if (item.isActive) {
+					instanceIndex = indexCount;
+				}
+				indexCount += 1;
+			}
+		}
+
+		console.log(instances[instanceIndex].position);
 	};
 
 	onMount(() => {
