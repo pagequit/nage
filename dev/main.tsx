@@ -1,5 +1,5 @@
 import "./main.css";
-import { type Component, createSignal, onMount } from "solid-js";
+import { type Component, createSignal, onMount, type Setter } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
@@ -40,6 +40,13 @@ function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 	gameContainer.style = `position: relative; top: 0; left: ${width}px; width: ${document.body.offsetWidth - width}px;`;
 }
 
+function mapActiveItem(items: Array<ListItem>, index: number): Array<ListItem> {
+	return items.map((item, idx) => ({
+		...item,
+		isActive: idx === index,
+	}));
+}
+
 const scenesRaw = await fetchScenes();
 
 const DevTools: Component<{ gameContainer: HTMLElement }> = ({
@@ -65,15 +72,33 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 	adjustGameContainer(gameContainer, width());
 
+	const [scenes, setScenes] = createSignal(
+		scenesRaw.map((scene) => ({
+			...scene,
+			isActive: scene.label === currentScene.data.name,
+		})),
+	);
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
 
-	const [scenes] = createSignal(scenesRaw);
+	const setCurrentScene = async (
+		scenes: Array<ListItem>,
+		index: number,
+	): Promise<void> => {
+		setScenes(mapActiveItem(scenes, index));
 
-	const setCurrentScene = async ({ label: name }: ListItem) => {
-		await loadScene(name);
+		await loadScene(scenes[index].label);
 		setEntities(mapSceneEntities(currentScene.data));
+	};
+
+	const setActiveEntity = (entities: Array<ListItem>, index: number): void => {
+		setEntities(mapActiveItem(entities, index));
+
+		const instances = currentScene.entityInstanceMap.get(
+			entities[index].label,
+		)!.instances;
+		console.log(instances);
 	};
 
 	onMount(() => {
@@ -129,7 +154,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
-				<ItemList name="Entities" handler={console.log} items={entities} />
+				<ItemList name="Entities" handler={setActiveEntity} items={entities} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>

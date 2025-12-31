@@ -19,7 +19,7 @@ import {
 
 export type ListItem = { label: string; isActive: boolean };
 
-export type ItemHandler = (item: ListItem, index: number) => void;
+export type ItemHandler = (list: Array<ListItem>, index: number) => void;
 
 export type Direction = "default" | "asc" | "desc";
 
@@ -136,7 +136,7 @@ export const ItemList: Component<{
 									classList={{
 										active: item.isActive,
 									}}
-									onClick={() => props.handler(item, index())}
+									onClick={() => props.handler(items(), index())}
 								>
 									{item.label}
 								</li>
