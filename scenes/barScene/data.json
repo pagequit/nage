@@ -1,0 +1,21 @@
+{
+	"name": "barScene",
+	"width": 80,
+	"height": 48,
+	"entities": [
+		{
+			"name": "fooEntity",
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		{
+			"name": "barEntity",
+			"position": {
+				"x": 24,
+				"y": 16
+			}
+		}
+	]
+}

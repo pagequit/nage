@@ -12,6 +12,9 @@ import {
 } from "#/dev/icons/index.ts";
 import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
+import { createGraph, type Edge, type Node } from "#/lib/Graph.ts";
+import { createVector, type Vector } from "#/lib/Vector.ts";
+import { GraphBrowser } from "./GraphBrowser.tsx";
 
 async function fetchScenes(): Promise<string[]> {
 	const indexRef: string[] = await (await fetch(`/api/scenes`)).json();
@@ -29,6 +32,21 @@ function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 }
 
 const scenesRaw = await fetchScenes();
+
+type TestNode = Node<{ position: Vector; label: string }>;
+
+const nodes: Array<TestNode> = [
+	{ position: createVector(), label: "foo" },
+	{ position: createVector(), label: "bar" },
+	{ position: createVector(), label: "lol" },
+];
+
+const edges: Array<Edge<TestNode>> = [
+	[nodes[0], nodes[1]],
+	[nodes[1], nodes[2]],
+];
+
+const graph = createGraph<TestNode>(nodes, edges);
 
 const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	gameContainer,
@@ -133,6 +151,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
 				<ItemList name="Entities" handler={setActiveEntity} items={entities} />
+
+				<GraphBrowser graph={graph} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>

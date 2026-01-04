@@ -138,10 +138,10 @@ export async function loadScene(id: string): Promise<void> {
 				});
 			}
 
-			const instance: Entity<unknown> = {
-				...structuredClone(entityMap.get(entity.name)!),
-				...structuredClone(entity),
-			};
+			const instance: Entity<unknown> = structuredClone({
+				...entityMap.get(entity.name)!,
+				...entity,
+			});
 
 			entityInstanceMap.get(entity.name)!.instances.push(instance);
 		}),

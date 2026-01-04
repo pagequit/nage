@@ -1,0 +1,11 @@
+.graph-browser {
+	border-radius: var(--sp-1);
+	overflow: hidden;
+
+	canvas {
+		display: block;
+		user-select: none;
+		height: 100%;
+		width: 100%;
+	}
+}
