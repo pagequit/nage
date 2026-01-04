@@ -4,14 +4,14 @@ export type Node<T> = T;
 export type Edge<T> = [Node<T>, Node<T>];
 export type Graph<T> = Map<Node<T>, Array<Node<T>>>;
 
-type PositionPartial = {
+export type PositionPartial = {
 	position: Vector;
 };
 
 export function drawNode(
 	node: Node<PositionPartial>,
 	ctx: CanvasRenderingContext2D,
-	color: string,
+	color: string = "#fff",
 ): void {
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = color;
@@ -41,7 +41,7 @@ export function getNodeByPosition(
 export function drawEdge(
 	edge: Edge<PositionPartial>,
 	ctx: CanvasRenderingContext2D,
-	color: string,
+	color: string = "#fff",
 ): void {
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = color;
@@ -85,11 +85,9 @@ export function createGraph<T>(
 
 export function originDFS<T>(origin: Node<T>, graph: Graph<T>): Array<Node<T>> {
 	const visited: Array<Node<T>> = [origin];
-
 	if (!graph.has(origin)) {
 		return visited;
 	}
-
 	innerDFS(origin, graph, visited);
 
 	return visited;
