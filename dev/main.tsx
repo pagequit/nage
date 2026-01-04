@@ -42,13 +42,20 @@ const nodes: Array<TestNode> = [
 	{ position: createVector(), label: "hai" },
 	{ position: createVector(), label: "sea" },
 	{ position: createVector(), label: "vot" },
+	{ position: createVector(), label: "zoe" },
+	{ position: createVector(), label: "asm" },
 ];
 
 const edges: Array<Edge<TestNode>> = [
 	[nodes[0], nodes[1]],
 	[nodes[0], nodes[2]],
-	[nodes[0], nodes[3]],
 	[nodes[4], nodes[5]],
+	[nodes[5], nodes[3]],
+	[nodes[1], nodes[2]],
+	[nodes[0], nodes[3]],
+	[nodes[2], nodes[6]],
+	[nodes[5], nodes[7]],
+	[nodes[5], nodes[6]],
 ];
 
 const graph = createGraph<TestNode>(nodes, edges);

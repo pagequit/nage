@@ -29,6 +29,13 @@ export function getDistance(a: Vector, b: Vector): number {
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
+export function getDistanceSquared(a: Vector, b: Vector): number {
+	const dx = a.x - b.x;
+	const dy = a.y - b.y;
+
+	return dx * dx + dy * dy;
+}
+
 export function getSquared(vector: Vector): number {
 	return vector.x * vector.x + vector.y * vector.y;
 }

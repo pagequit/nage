@@ -3,11 +3,12 @@ import { type Component, createSignal, onMount } from "solid-js";
 import {
 	drawEdge,
 	drawNode,
+	type Edge,
 	type Graph,
 	type Node,
 	type PositionPartial,
 } from "#/lib/Graph.ts";
-import { createVector, type Vector } from "#/lib/Vector.ts";
+import { createVector, scale, type Vector } from "#/lib/Vector.ts";
 
 function drawGraph<T extends PositionPartial>(
 	graph: Graph<T>,
@@ -21,10 +22,52 @@ function drawGraph<T extends PositionPartial>(
 	}
 }
 
+function applyRepulsion(
+	nodes: Array<{ position: Vector; velocity: Vector }>,
+): void {
+	const strength = 16;
+
+	nodes.forEach((node, index) => {
+		node.velocity = createVector(0, 0);
+		for (let i = 0; i < nodes.length; i++) {
+			if (index === i) {
+				continue;
+			}
+			const a = node.position;
+			const b = nodes[i].position;
+
+			const dx = a.x - b.x;
+			const dy = a.y - b.y;
+
+			const direction = createVector(dx, dy);
+
+			const distanceSquare = dx * dx + dy * dy;
+
+			const magnitude = strength / distanceSquare;
+
+			scale(direction, magnitude);
+
+			node.velocity.x += direction.x;
+			node.velocity.y += direction.y;
+		}
+	});
+}
+
+function doTheHookeThing<T extends { position: Vector; velocity: Vector }>([
+	a,
+	b,
+]: Edge<T>): void {
+	const edgeLength = 32;
+	const stiffness = 0.8;
+	const displacement = 0;
+	const f = stiffness * displacement;
+}
+
 function placeNodes<T extends PositionPartial>(graph: Graph<T>): void {
 	const visited: Array<Node<T>> = [];
 	const currentPosition = createVector();
 	const radius = 24;
+	const dist = radius * 1.5;
 
 	for (const [node, neighbours] of graph.entries()) {
 		if (visited.includes(node)) {
@@ -38,12 +81,13 @@ function placeNodes<T extends PositionPartial>(graph: Graph<T>): void {
 		neighbours.forEach((neighbour, index) => {
 			const fraction = (index + 1) / neighbours.length;
 			const rad = Math.PI * 2 * fraction;
-			neighbour.position.x = currentPosition.x + radius * Math.cos(rad);
-			neighbour.position.y = currentPosition.y + radius * Math.sin(rad);
+
+			neighbour.position.x = currentPosition.x + dist * Math.cos(rad);
+			neighbour.position.y = currentPosition.y + dist * Math.sin(rad);
 			visited.push(neighbour);
 		});
 
-		currentPosition.y += radius * 2;
+		currentPosition.y += dist;
 	}
 }
 
