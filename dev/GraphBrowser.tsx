@@ -1,13 +1,6 @@
 import "./GraphBrowser.css";
 import { type Component, createSignal, onMount } from "solid-js";
-import {
-	drawEdge,
-	drawNode,
-	type Edge,
-	type Graph,
-	type Node,
-	type PositionPartial,
-} from "#/lib/Graph.ts";
+import type { Edge, Graph, Node } from "#/lib/Graph.ts";
 import {
 	createVector,
 	getDistance,
@@ -16,25 +9,39 @@ import {
 	type Vector,
 } from "#/lib/Vector.ts";
 
-function drawGraph<T extends PositionPartial>(
-	graph: Graph<T>,
-	ctx: CanvasRenderingContext2D,
-): void {
-	for (const [node, neighbours] of graph.entries()) {
-		drawNode(node, ctx);
-		for (const neighbour of neighbours) {
-			drawEdge([node, neighbour], ctx);
-		}
-	}
-}
-
-type PhysicsPartial = PositionPartial & {
+type PhysicsPartial = {
+	position: Vector;
 	velocity: Vector;
 	acceleration: Vector;
 };
 
+function drawNode(
+	node: Node<PhysicsPartial>,
+	ctx: CanvasRenderingContext2D,
+	color: string = "#fff",
+): void {
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = color;
+	ctx.beginPath();
+	ctx.arc(node.position.x, node.position.y, 8, 0, 2 * Math.PI);
+	ctx.stroke();
+}
+
+function drawEdge(
+	edge: Edge<PhysicsPartial>,
+	ctx: CanvasRenderingContext2D,
+	color: string = "#fff",
+): void {
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = color;
+	ctx.beginPath();
+	ctx.moveTo(edge[0].position.x, edge[0].position.y);
+	ctx.lineTo(edge[1].position.x, edge[1].position.y);
+	ctx.stroke();
+}
+
 function applyRepulsion(nodes: Array<PhysicsPartial>): void {
-	const strength = 1.8;
+	const strength = 8;
 
 	nodes.forEach((node, index) => {
 		for (let i = 0; i < nodes.length; i++) {
@@ -50,7 +57,6 @@ function applyRepulsion(nodes: Array<PhysicsPartial>): void {
 			const direction = createVector(dx, dy);
 
 			const distanceSquare = dx * dx + dy * dy;
-
 			const magnitude = strength / (distanceSquare + Number.EPSILON);
 
 			scale(direction, magnitude);
@@ -61,17 +67,17 @@ function applyRepulsion(nodes: Array<PhysicsPartial>): void {
 	});
 }
 
-function doTheHookeThing<T extends PhysicsPartial>([a, b]: Edge<T>): void {
+function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 	const restLength = 48;
-	const stiffness = 0.3;
+	const stiffness = 0.1;
 
-	const direction = createVector(0, 0);
+	const direction = createVector();
 	setDistanceNormal(direction, a.position, b.position);
 
 	const distance = getDistance(a.position, b.position);
-	const magnitude = (distance - restLength) * stiffness;
+	const magnitude = (distance - restLength) * stiffness + Number.EPSILON;
 
-	scale(direction, magnitude / 2 + Number.EPSILON);
+	scale(direction, magnitude / 2);
 
 	a.acceleration.x -= direction.x;
 	a.acceleration.y -= direction.y;
@@ -80,43 +86,13 @@ function doTheHookeThing<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 	b.acceleration.y += direction.y;
 }
 
-function placeNodes<T extends PositionPartial>(graph: Graph<T>): void {
-	const visited: Array<Node<T>> = [];
-	const currentPosition = createVector();
-	const radius = 24;
-	const dist = radius * 1.5;
-
-	for (const [node, neighbours] of graph.entries()) {
-		if (visited.includes(node)) {
-			continue;
-		}
-		visited.push(node);
-
-		node.position.x = currentPosition.x;
-		node.position.y = currentPosition.y;
-
-		neighbours.forEach((neighbour, index) => {
-			const fraction = (index + 1) / neighbours.length;
-			const rad = Math.PI * 2 * fraction;
-
-			neighbour.position.x = currentPosition.x + dist * Math.cos(rad);
-			neighbour.position.y = currentPosition.y + dist * Math.sin(rad);
-			visited.push(neighbour);
-		});
-
-		currentPosition.y += dist;
-	}
-}
-
 export const GraphBrowser: Component<{
 	graph: Graph<PhysicsPartial & { label: string }>;
 }> = (props) => {
 	let canvasRef!: HTMLCanvasElement;
 
-	const [width, setWidth] = createSignal(300);
-	const [height, setHeight] = createSignal(300);
-
-	// placeNodes(props.graph);
+	const [width] = createSignal(300);
+	const [height] = createSignal(300);
 
 	const nodes: Array<Node<PhysicsPartial>> = [...props.graph.keys()];
 
@@ -135,17 +111,12 @@ export const GraphBrowser: Component<{
 			alpha: false,
 		})!;
 
-		const damping = 0.9;
+		const damping = 0.8;
 
-		let then = self.performance.now();
-		let delta = 0;
-		const animate = (timestamp: number): void => {
-			delta = timestamp - then;
-			then = timestamp;
-
+		const animate = (): void => {
 			applyRepulsion(nodes);
 			for (const edge of edges) {
-				doTheHookeThing(edge);
+				hookEdge(edge);
 			}
 
 			for (const node of nodes) {
@@ -167,12 +138,18 @@ export const GraphBrowser: Component<{
 			ctx.save();
 			ctx.translate(width() / 2, height() / 2);
 
-			drawGraph(props.graph, ctx);
+			for (const node of nodes) {
+				drawNode(node, ctx);
+			}
+
+			for (const edge of edges) {
+				drawEdge(edge, ctx);
+			}
 
 			requestAnimationFrame(animate);
 		};
 
-		animate(then);
+		animate();
 	});
 
 	return (
