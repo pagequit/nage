@@ -1,6 +1,11 @@
 import "./GraphBrowser.css";
 import { type Component, createSignal, onMount } from "solid-js";
-import type { Edge, Graph, Node } from "#/lib/Graph.ts";
+import {
+	type Edge,
+	type Graph,
+	getNeighbours,
+	type Node,
+} from "#/lib/Graph.ts";
 import {
 	createVector,
 	getDistance,
@@ -18,7 +23,7 @@ type PhysicsPartial = {
 function drawNode(
 	node: Node<PhysicsPartial>,
 	ctx: CanvasRenderingContext2D,
-	color: string = "#fff",
+	color: string = "#dbdee1",
 ): void {
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = color;
@@ -30,7 +35,7 @@ function drawNode(
 function drawEdge(
 	edge: Edge<PhysicsPartial>,
 	ctx: CanvasRenderingContext2D,
-	color: string = "#fff",
+	color: string = "#dbdee1",
 ): void {
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = color;
@@ -77,7 +82,7 @@ function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 	const distance = getDistance(a.position, b.position);
 	const magnitude = (distance - restLength) * stiffness + Number.EPSILON;
 
-	scale(direction, magnitude / 2);
+	scale(direction, magnitude);
 
 	a.acceleration.x -= direction.x;
 	a.acceleration.y -= direction.y;
@@ -113,6 +118,9 @@ export const GraphBrowser: Component<{
 
 		const damping = 0.8;
 
+		const activeNode = props.graph.keys().find((_, i) => i === 3);
+		const activeNeighbours = getNeighbours(props.graph, activeNode);
+
 		const animate = (): void => {
 			applyRepulsion(nodes);
 			for (const edge of edges) {
@@ -138,12 +146,24 @@ export const GraphBrowser: Component<{
 			ctx.save();
 			ctx.translate(width() / 2, height() / 2);
 
-			for (const node of nodes) {
-				drawNode(node, ctx);
+			for (const edge of edges) {
+				drawEdge(edge, ctx, "#404249");
 			}
 
-			for (const edge of edges) {
-				drawEdge(edge, ctx);
+			for (const node of nodes) {
+				if (node === activeNode) {
+					drawNode(node, ctx, "#ee459e");
+				} else {
+					if (
+						activeNeighbours.includes(
+							node as PhysicsPartial & { label: string },
+						)
+					) {
+						drawNode(node, ctx, "#6572f5");
+					} else {
+						drawNode(node, ctx, "#404249");
+					}
+				}
 			}
 
 			requestAnimationFrame(animate);
