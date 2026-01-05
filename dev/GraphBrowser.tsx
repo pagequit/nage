@@ -8,7 +8,13 @@ import {
 	type Node,
 	type PositionPartial,
 } from "#/lib/Graph.ts";
-import { createVector, scale, type Vector } from "#/lib/Vector.ts";
+import {
+	createVector,
+	getDistance,
+	scale,
+	setDistanceNormal,
+	type Vector,
+} from "#/lib/Vector.ts";
 
 function drawGraph<T extends PositionPartial>(
 	graph: Graph<T>,
@@ -22,13 +28,15 @@ function drawGraph<T extends PositionPartial>(
 	}
 }
 
-function applyRepulsion(
-	nodes: Array<{ position: Vector; velocity: Vector }>,
-): void {
-	const strength = 16;
+type PhysicsPartial = PositionPartial & {
+	velocity: Vector;
+	acceleration: Vector;
+};
+
+function applyRepulsion(nodes: Array<PhysicsPartial>): void {
+	const strength = 1.8;
 
 	nodes.forEach((node, index) => {
-		node.velocity = createVector(0, 0);
 		for (let i = 0; i < nodes.length; i++) {
 			if (index === i) {
 				continue;
@@ -43,24 +51,33 @@ function applyRepulsion(
 
 			const distanceSquare = dx * dx + dy * dy;
 
-			const magnitude = strength / distanceSquare;
+			const magnitude = strength / (distanceSquare + Number.EPSILON);
 
 			scale(direction, magnitude);
 
-			node.velocity.x += direction.x;
-			node.velocity.y += direction.y;
+			node.acceleration.x += direction.x;
+			node.acceleration.y += direction.y;
 		}
 	});
 }
 
-function doTheHookeThing<T extends { position: Vector; velocity: Vector }>([
-	a,
-	b,
-]: Edge<T>): void {
-	const edgeLength = 32;
-	const stiffness = 0.8;
-	const displacement = 0;
-	const f = stiffness * displacement;
+function doTheHookeThing<T extends PhysicsPartial>([a, b]: Edge<T>): void {
+	const restLength = 48;
+	const stiffness = 0.3;
+
+	const direction = createVector(0, 0);
+	setDistanceNormal(direction, a.position, b.position);
+
+	const distance = getDistance(a.position, b.position);
+	const magnitude = (distance - restLength) * stiffness;
+
+	scale(direction, magnitude / 2 + Number.EPSILON);
+
+	a.acceleration.x -= direction.x;
+	a.acceleration.y -= direction.y;
+
+	b.acceleration.x += direction.x;
+	b.acceleration.y += direction.y;
 }
 
 function placeNodes<T extends PositionPartial>(graph: Graph<T>): void {
@@ -92,21 +109,70 @@ function placeNodes<T extends PositionPartial>(graph: Graph<T>): void {
 }
 
 export const GraphBrowser: Component<{
-	graph: Graph<{ position: Vector; label: string }>;
+	graph: Graph<PhysicsPartial & { label: string }>;
 }> = (props) => {
 	let canvasRef!: HTMLCanvasElement;
 
 	const [width, setWidth] = createSignal(300);
 	const [height, setHeight] = createSignal(300);
 
+	// placeNodes(props.graph);
+
+	const nodes: Array<Node<PhysicsPartial>> = [...props.graph.keys()];
+
+	const edges: Array<Edge<PhysicsPartial>> = props.graph.entries().reduce(
+		(acc, [node, neighbours]) => {
+			for (const neighbour of neighbours) {
+				acc.push([node, neighbour]);
+			}
+			return acc;
+		},
+		[] as Array<Edge<PhysicsPartial>>,
+	);
+
 	onMount(() => {
 		const ctx: CanvasRenderingContext2D = canvasRef.getContext("2d", {
 			alpha: false,
 		})!;
-		ctx.translate(width() / 2, height() / 2);
 
-		placeNodes(props.graph);
-		drawGraph(props.graph, ctx);
+		const damping = 0.9;
+
+		let then = self.performance.now();
+		let delta = 0;
+		const animate = (timestamp: number): void => {
+			delta = timestamp - then;
+			then = timestamp;
+
+			applyRepulsion(nodes);
+			for (const edge of edges) {
+				doTheHookeThing(edge);
+			}
+
+			for (const node of nodes) {
+				node.velocity.x += node.acceleration.x;
+				node.velocity.y += node.acceleration.y;
+
+				node.velocity.x *= damping;
+				node.velocity.y *= damping;
+
+				node.position.x += node.velocity.x;
+				node.position.y += node.velocity.y;
+
+				node.acceleration.x = 0;
+				node.acceleration.y = 0;
+			}
+
+			ctx.restore();
+			ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+			ctx.save();
+			ctx.translate(width() / 2, height() / 2);
+
+			drawGraph(props.graph, ctx);
+
+			requestAnimationFrame(animate);
+		};
+
+		animate(then);
 	});
 
 	return (

@@ -33,29 +33,42 @@ function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 
 const scenesRaw = await fetchScenes();
 
-type TestNode = Node<{ position: Vector; label: string }>;
+type TestNode = Node<{
+	position: Vector;
+	velocity: Vector;
+	acceleration: Vector;
+	label: string;
+}>;
+
+function createTestNode(label: string): TestNode {
+	return {
+		label,
+		position: createVector(Math.random(), Math.random()),
+		velocity: createVector(),
+		acceleration: createVector(),
+	};
+}
 
 const nodes: Array<TestNode> = [
-	{ position: createVector(), label: "foo" },
-	{ position: createVector(), label: "bar" },
-	{ position: createVector(), label: "lol" },
-	{ position: createVector(), label: "hai" },
-	{ position: createVector(), label: "sea" },
-	{ position: createVector(), label: "vot" },
-	{ position: createVector(), label: "zoe" },
-	{ position: createVector(), label: "asm" },
+	createTestNode("foo"),
+	createTestNode("bar"),
+	createTestNode("lol"),
+	createTestNode("hai"),
+	createTestNode("sea"),
+	createTestNode("vot"),
+	createTestNode("zoe"),
+	createTestNode("asm"),
 ];
 
 const edges: Array<Edge<TestNode>> = [
 	[nodes[0], nodes[1]],
 	[nodes[0], nodes[2]],
-	[nodes[4], nodes[5]],
-	[nodes[5], nodes[3]],
 	[nodes[1], nodes[2]],
-	[nodes[0], nodes[3]],
-	[nodes[2], nodes[6]],
-	[nodes[5], nodes[7]],
+	[nodes[2], nodes[3]],
+	[nodes[4], nodes[5]],
+	[nodes[4], nodes[3]],
 	[nodes[5], nodes[6]],
+	[nodes[3], nodes[6]],
 ];
 
 const graph = createGraph<TestNode>(nodes, edges);
