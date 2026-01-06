@@ -10,10 +10,13 @@ import {
 	FileIcon,
 	ZoomScanIcon,
 } from "#/dev/icons/index.ts";
-import { currentScene, loadScene, type SceneData } from "#/engine/Scene.ts";
+import {
+	currentScene,
+	type SceneData,
+	sceneGraph,
+	setScene,
+} from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
-import { createGraph, type Edge, type Node } from "#/lib/Graph.ts";
-import { createVector, type Vector } from "#/lib/Vector.ts";
 import { GraphBrowser } from "./GraphBrowser.tsx";
 
 async function fetchScenes(): Promise<string[]> {
@@ -32,46 +35,6 @@ function adjustGameContainer(gameContainer: HTMLElement, width: number): void {
 }
 
 const scenesRaw = await fetchScenes();
-
-type TestNode = Node<{
-	position: Vector;
-	velocity: Vector;
-	acceleration: Vector;
-	label: string;
-}>;
-
-function createTestNode(label: string): TestNode {
-	return {
-		label,
-		position: createVector(Math.random(), Math.random()),
-		velocity: createVector(),
-		acceleration: createVector(),
-	};
-}
-
-const nodes: Array<TestNode> = [
-	createTestNode("foo"),
-	createTestNode("bar"),
-	createTestNode("lol"),
-	createTestNode("hai"),
-	createTestNode("sea"),
-	createTestNode("vot"),
-	createTestNode("zoe"),
-	createTestNode("asm"),
-];
-
-const edges: Array<Edge<TestNode>> = [
-	[nodes[0], nodes[1]],
-	[nodes[0], nodes[2]],
-	[nodes[1], nodes[2]],
-	[nodes[2], nodes[3]],
-	[nodes[4], nodes[5]],
-	[nodes[4], nodes[3]],
-	[nodes[5], nodes[6]],
-	[nodes[3], nodes[6]],
-];
-
-const graph = createGraph<TestNode>(nodes, edges);
 
 const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	gameContainer,
@@ -103,7 +66,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 	const setCurrentScene = async (items: ItemsRef): Promise<void> => {
 		const name = items.find((ref) => ref.item.isActive)!.item.label;
-		await loadScene(name);
+		await setScene(name);
 		setEntities(mapSceneEntities(currentScene.data));
 	};
 
@@ -177,7 +140,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
 				<ItemList name="Entities" handler={setActiveEntity} items={entities} />
 
-				<GraphBrowser graph={graph} />
+				<GraphBrowser graph={sceneGraph} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>

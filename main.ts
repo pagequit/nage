@@ -1,4 +1,4 @@
-import { currentScene, loadScene } from "#/engine/Scene.ts";
+import { currentScene, setScene } from "#/engine/Scene.ts";
 import {
 	initViewport,
 	resetCtx,
@@ -23,7 +23,7 @@ function animate(timestamp: number): void {
 	}
 
 	initViewport();
-	await loadScene("testScene");
+	await setScene("testScene");
 
 	resizeCanvas(currentScene.data.width, currentScene.data.height);
 	self.addEventListener("resize", () => {

@@ -1,5 +1,6 @@
 import "./GraphBrowser.css";
 import { type Component, createSignal, onMount } from "solid-js";
+import { currentScene, sceneCache } from "#/engine/Scene.ts";
 import {
 	type Edge,
 	type Graph,
@@ -92,24 +93,12 @@ function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 }
 
 export const GraphBrowser: Component<{
-	graph: Graph<PhysicsPartial & { label: string }>;
+	graph: Graph<string>;
 }> = (props) => {
 	let canvasRef!: HTMLCanvasElement;
 
 	const [width] = createSignal(300);
 	const [height] = createSignal(300);
-
-	const nodes: Array<Node<PhysicsPartial>> = [...props.graph.keys()];
-
-	const edges: Array<Edge<PhysicsPartial>> = props.graph.entries().reduce(
-		(acc, [node, neighbours]) => {
-			for (const neighbour of neighbours) {
-				acc.push([node, neighbour]);
-			}
-			return acc;
-		},
-		[] as Array<Edge<PhysicsPartial>>,
-	);
 
 	onMount(() => {
 		const ctx: CanvasRenderingContext2D = canvasRef.getContext("2d", {
@@ -118,8 +107,34 @@ export const GraphBrowser: Component<{
 
 		const damping = 0.8;
 
-		const activeNode = props.graph.keys().find((_, i) => i === 3);
-		const activeNeighbours = getNeighbours(props.graph, activeNode);
+		const nodes: Array<Node<PhysicsPartial & { name: string }>> = [
+			...props.graph.keys(),
+		].map((node: string) => ({
+			name: node,
+			position: createVector(Math.random(), Math.random()),
+			velocity: createVector(),
+			acceleration: createVector(),
+		}));
+
+		const edges: Array<Edge<PhysicsPartial>> = props.graph.entries().reduce(
+			(acc, [name, neighbours]) => {
+				const node = nodes.find((n) => n.name === name)!;
+				for (const neighbour of neighbours) {
+					const n = nodes.find((node) => node.name === neighbour);
+					if (n !== undefined) {
+						acc.push([node, n]);
+					}
+				}
+				return acc;
+			},
+			[] as Array<Edge<PhysicsPartial>>,
+		);
+
+		const activeNode = props.graph
+			.keys()
+			.find((name) => name === currentScene.data.name);
+
+		const activeNeighbours = getNeighbours(props.graph, activeNode!);
 
 		const animate = (): void => {
 			applyRepulsion(nodes);
@@ -151,14 +166,10 @@ export const GraphBrowser: Component<{
 			}
 
 			for (const node of nodes) {
-				if (node === activeNode) {
+				if (node.name === activeNode) {
 					drawNode(node, ctx, "#ee459e");
 				} else {
-					if (
-						activeNeighbours.includes(
-							node as PhysicsPartial & { label: string },
-						)
-					) {
+					if (activeNeighbours.includes(node.name)) {
 						drawNode(node, ctx, "#6572f5");
 					} else {
 						drawNode(node, ctx, "#404249");

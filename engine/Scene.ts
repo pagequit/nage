@@ -1,3 +1,4 @@
+import { useWithAsyncCache } from "#/lib/cache.ts";
 import { type Graph, getNeighbours } from "#/lib/Graph.ts";
 import {
 	type Animate as AnimateEntity,
@@ -38,7 +39,38 @@ export type SceneChangeCallback = (from: Scene, to: Scene) => void;
 const sceneDataMap = new Map<string, SceneData>();
 const sceneProcessMap = new Map<string, Process>();
 const sceneEntiyMap = new Map<string, EntityInstanceMap>();
-const sceneGraph: Graph<string> = new Map();
+export const sceneGraph: Graph<string> = new Map();
+
+export const [loadScene, sceneCache] = useWithAsyncCache(
+	async (name: string) => {
+		await import(`#/scenes/${name}/index.ts`);
+
+		const data = sceneDataMap.get(name)!;
+		const entityInstanceMap = sceneEntiyMap.get(name)!;
+		entityInstanceMap.clear();
+
+		Promise.all(
+			data.entities.map(async (entity: Entity<unknown>) => {
+				await import(`#/entities/${entity.name}/index.ts`);
+
+				if (!entityInstanceMap.has(entity.name)) {
+					entityInstanceMap.set(entity.name, {
+						animate: entityAnimateMap.get(entity.name) ?? (() => {}),
+						process: entityProcessMap.get(entity.name) ?? (() => {}),
+						instances: [],
+					});
+				}
+
+				const instance: Entity<unknown> = structuredClone({
+					...entityMap.get(entity.name)!,
+					...entity,
+				});
+
+				entityInstanceMap.get(entity.name)!.instances.push(instance);
+			}),
+		);
+	},
+);
 
 export const currentScene: Scene = {
 	data: {
@@ -77,8 +109,8 @@ function linkScenes(a: string, b: string): void {
 
 export function useScene(data: SceneData): {
 	linkScenes: <T extends readonly string[]>(
-		ids: T,
-	) => (id: T[number]) => Promise<void>;
+		names: T,
+	) => (name: T[number]) => Promise<void>;
 	process: (fn: Process) => void;
 } {
 	sceneDataMap.set(data.name, data);
@@ -91,7 +123,7 @@ export function useScene(data: SceneData): {
 			}
 
 			return async (id) => {
-				return changeScene(id);
+				return setScene(id);
 			};
 		},
 		process(fn) {
@@ -104,48 +136,17 @@ export function useScene(data: SceneData): {
 	};
 }
 
-export function changeScene(id: string): Promise<void> {
-	const data = sceneDataMap.get(id)!;
-	const process = sceneProcessMap.get(id)!;
-	const entityInstanceMap = sceneEntiyMap.get(id)!;
-	for (const neighbour of getNeighbours(sceneGraph, id)) {
+export async function setScene(name: string): Promise<void> {
+	await loadScene(name);
+	for (const neighbour of getNeighbours(sceneGraph, name)) {
 		if (!sceneCache.has(neighbour)) {
 			sceneCache.set(neighbour, loadScene(neighbour));
 		}
 	}
-	currentScene.data = data;
-	currentScene.process = process;
-	currentScene.entityInstanceMap = entityInstanceMap;
-}
 
-export async function loadScene(id: string): Promise<void> {
-	await import(`#/scenes/${id}/index.ts`);
-
-	const data = sceneDataMap.get(id)!;
-	const process = sceneProcessMap.get(id)!;
-	const entityInstanceMap = sceneEntiyMap.get(id)!;
-	entityInstanceMap.clear();
-
-	Promise.all(
-		data.entities.map(async (entity: Entity<unknown>) => {
-			await import(`#/entities/${entity.name}/index.ts`);
-
-			if (!entityInstanceMap.has(entity.name)) {
-				entityInstanceMap.set(entity.name, {
-					animate: entityAnimateMap.get(entity.name) ?? (() => {}),
-					process: entityProcessMap.get(entity.name) ?? (() => {}),
-					instances: [],
-				});
-			}
-
-			const instance: Entity<unknown> = structuredClone({
-				...entityMap.get(entity.name)!,
-				...entity,
-			});
-
-			entityInstanceMap.get(entity.name)!.instances.push(instance);
-		}),
-	);
+	const data = sceneDataMap.get(name)!;
+	const process = sceneProcessMap.get(name)!;
+	const entityInstanceMap = sceneEntiyMap.get(name)!;
 
 	currentScene.data = data;
 	currentScene.process = process;

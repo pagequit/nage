@@ -3,8 +3,6 @@ import data from "./data.json";
 
 const { process, linkScenes } = useScene(data);
 
-// const changeScene = linkScenes(["testScene"] as const);
-
-// changeScene("testScene");
+linkScenes(["testScene"] as const);
 
 process((_ctx, _delta) => {});

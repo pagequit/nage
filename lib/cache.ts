@@ -1,7 +1,7 @@
 export type Cache<T> = Map<string, T>;
 export type AsyncCache<T> = Map<string, Promise<T>>;
 
-export function withCache<T, U extends (...args: unknown[]) => T>(
+export function withCache<T, U extends (...args: any[]) => T>(
 	callback: U,
 	key: string,
 	cache: Cache<T>,
@@ -18,7 +18,7 @@ export function withCache<T, U extends (...args: unknown[]) => T>(
 	};
 }
 
-export function withAsyncCache<T, U extends (...args: unknown[]) => Promise<T>>(
+export function withAsyncCache<T, U extends (...args: any[]) => Promise<T>>(
 	callback: U,
 	key: string,
 	cache: AsyncCache<T>,
@@ -36,7 +36,7 @@ export function withAsyncCache<T, U extends (...args: unknown[]) => Promise<T>>(
 }
 
 export function useWithCache<T>(
-	callback: (...args: unknown[]) => T,
+	callback: (...args: any[]) => T,
 ): [(uri: string) => T, Cache<T>] {
 	const cache: Cache<T> = new Map();
 
@@ -44,7 +44,7 @@ export function useWithCache<T>(
 }
 
 export function useWithAsyncCache<T>(
-	callback: (...args: unknown[]) => Promise<T>,
+	callback: (...args: any[]) => Promise<T>,
 ): [(uri: string) => Promise<T>, AsyncCache<T>] {
 	const cache: AsyncCache<T> = new Map();
 
