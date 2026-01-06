@@ -47,7 +47,7 @@ function drawEdge(
 }
 
 function applyRepulsion(nodes: Array<PhysicsPartial>): void {
-	const strength = 8;
+	const strength = 4;
 
 	nodes.forEach((node, index) => {
 		for (let i = 0; i < nodes.length; i++) {
@@ -75,7 +75,7 @@ function applyRepulsion(nodes: Array<PhysicsPartial>): void {
 
 function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 	const restLength = 48;
-	const stiffness = 0.1;
+	const stiffness = 0.2;
 
 	const direction = createVector();
 	setDistanceNormal(direction, a.position, b.position);
@@ -100,23 +100,20 @@ export const GraphBrowser: Component<{
 	const [width] = createSignal(300);
 	const [height] = createSignal(300);
 
-	onMount(() => {
-		const ctx: CanvasRenderingContext2D = canvasRef.getContext("2d", {
-			alpha: false,
-		})!;
-
-		const damping = 0.8;
-
-		const nodes: Array<Node<PhysicsPartial & { name: string }>> = [
-			...props.graph.keys(),
-		].map((node: string) => ({
+	const enhanceNode = (node: string) => {
+		return {
 			name: node,
 			position: createVector(Math.random(), Math.random()),
 			velocity: createVector(),
 			acceleration: createVector(),
-		}));
+		};
+	};
 
-		const edges: Array<Edge<PhysicsPartial>> = props.graph.entries().reduce(
+	const nodes: Array<Node<PhysicsPartial & { name: string }>> = [];
+
+	let edges: Array<Edge<PhysicsPartial>> = [];
+	const updateEdges = () => {
+		edges = props.graph.entries().reduce(
 			(acc, [name, neighbours]) => {
 				const node = nodes.find((n) => n.name === name)!;
 				for (const neighbour of neighbours) {
@@ -129,14 +126,27 @@ export const GraphBrowser: Component<{
 			},
 			[] as Array<Edge<PhysicsPartial>>,
 		);
+	};
 
-		const activeNode = props.graph
-			.keys()
-			.find((name) => name === currentScene.data.name);
+	onMount(() => {
+		const ctx: CanvasRenderingContext2D = canvasRef.getContext("2d", {
+			alpha: false,
+		})!;
 
-		const activeNeighbours = getNeighbours(props.graph, activeNode!);
-
+		const damping = 0.8;
 		const animate = (): void => {
+			for (const node of props.graph.keys()) {
+				if (nodes.find((n) => n.name === node) === undefined) {
+					nodes.push(enhanceNode(node));
+					updateEdges();
+				}
+			}
+
+			const activeNode = props.graph
+				.keys()
+				.find((name) => name === currentScene.data.name);
+			const activeNeighbours = getNeighbours(props.graph, activeNode!);
+
 			applyRepulsion(nodes);
 			for (const edge of edges) {
 				hookEdge(edge);
@@ -177,7 +187,7 @@ export const GraphBrowser: Component<{
 				}
 			}
 
-			requestAnimationFrame(animate);
+			setTimeout(animate, 100);
 		};
 
 		animate();

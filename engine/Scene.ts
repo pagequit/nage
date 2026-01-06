@@ -149,6 +149,9 @@ export async function setScene(name: string): Promise<void> {
 	const entityInstanceMap = sceneEntiyMap.get(name)!;
 
 	currentScene.data = data;
+	self.dispatchEvent(new Event("resize"));
+
 	currentScene.process = process;
+
 	currentScene.entityInstanceMap = entityInstanceMap;
 }
