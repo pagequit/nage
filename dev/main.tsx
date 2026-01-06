@@ -138,9 +138,9 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
-				<ItemList name="Entities" handler={setActiveEntity} items={entities} />
-
 				<GraphBrowser graph={sceneGraph} />
+
+				<ItemList name="Entities" handler={setActiveEntity} items={entities} />
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>

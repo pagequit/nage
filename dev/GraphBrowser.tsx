@@ -1,6 +1,6 @@
 import "./GraphBrowser.css";
 import { type Component, createSignal, onMount } from "solid-js";
-import { currentScene, sceneCache } from "#/engine/Scene.ts";
+import { currentScene } from "#/engine/Scene.ts";
 import {
 	type Edge,
 	type Graph,
@@ -9,6 +9,8 @@ import {
 } from "#/lib/Graph.ts";
 import {
 	createVector,
+	fromPolar,
+	getDirection,
 	getDistance,
 	scale,
 	setDistanceNormal,
@@ -26,11 +28,32 @@ function drawNode(
 	ctx: CanvasRenderingContext2D,
 	color: string = "#dbdee1",
 ): void {
-	ctx.lineWidth = 2;
-	ctx.strokeStyle = color;
+	const text = (node as PhysicsPartial & { name: string }).name;
+	const metrics = ctx.measureText(text);
+
+	ctx.fillStyle = color;
+
 	ctx.beginPath();
-	ctx.arc(node.position.x, node.position.y, 8, 0, 2 * Math.PI);
-	ctx.stroke();
+	ctx.arc(
+		node.position.x - metrics.width / 2,
+		node.position.y,
+		11,
+		Math.PI * 0.5,
+		Math.PI * 1.5,
+	);
+	ctx.arc(
+		node.position.x + metrics.width / 2,
+		node.position.y,
+		11,
+		-Math.PI * 0.5,
+		-Math.PI * 1.5,
+	);
+	ctx.fill();
+
+	ctx.shadowColor = "#000";
+	ctx.fillStyle = "#fff";
+	ctx.fillText(text, node.position.x, node.position.y);
+	ctx.shadowColor = "transparent";
 }
 
 function drawEdge(
@@ -38,11 +61,15 @@ function drawEdge(
 	ctx: CanvasRenderingContext2D,
 	color: string = "#dbdee1",
 ): void {
+	const tail = edge[0].position;
+	const tip = edge[1].position;
+
 	ctx.lineWidth = 2;
 	ctx.strokeStyle = color;
+
 	ctx.beginPath();
-	ctx.moveTo(edge[0].position.x, edge[0].position.y);
-	ctx.lineTo(edge[1].position.x, edge[1].position.y);
+	ctx.moveTo(tail.x, tail.y);
+	ctx.lineTo(tip.x, tip.y);
 	ctx.stroke();
 }
 
@@ -74,7 +101,7 @@ function applyRepulsion(nodes: Array<PhysicsPartial>): void {
 }
 
 function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
-	const restLength = 48;
+	const restLength = 86;
 	const stiffness = 0.2;
 
 	const direction = createVector();
@@ -133,6 +160,11 @@ export const GraphBrowser: Component<{
 			alpha: false,
 		})!;
 
+		ctx.font = "18px sans-serif";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.shadowBlur = 2;
+
 		const damping = 0.8;
 		const animate = (): void => {
 			for (const node of props.graph.keys()) {
@@ -169,23 +201,24 @@ export const GraphBrowser: Component<{
 			ctx.restore();
 			ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
 			ctx.save();
-			ctx.translate(width() / 2, height() / 2);
+			const activeRenderNode = nodes.find((n) => n.name === activeNode)!;
+			ctx.translate(
+				width() / 2 - activeRenderNode.position.x,
+				height() / 2 - activeRenderNode.position.y,
+			);
 
 			for (const edge of edges) {
-				drawEdge(edge, ctx, "#404249");
+				drawEdge(edge, ctx);
 			}
 
 			for (const node of nodes) {
-				if (node.name === activeNode) {
-					drawNode(node, ctx, "#ee459e");
+				if (activeNeighbours.includes(node.name)) {
+					drawNode(node, ctx, "#6572f5");
 				} else {
-					if (activeNeighbours.includes(node.name)) {
-						drawNode(node, ctx, "#6572f5");
-					} else {
-						drawNode(node, ctx, "#404249");
-					}
+					drawNode(node, ctx, "#404249");
 				}
 			}
+			drawNode(activeRenderNode, ctx, "#ee459e");
 
 			setTimeout(animate, 100);
 		};
