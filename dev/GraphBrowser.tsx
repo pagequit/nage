@@ -9,8 +9,6 @@ import {
 } from "#/lib/Graph.ts";
 import {
 	createVector,
-	fromPolar,
-	getDirection,
 	getDistance,
 	scale,
 	setDistanceNormal,
@@ -102,7 +100,7 @@ function applyRepulsion(nodes: Array<PhysicsPartial>): void {
 
 function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 	const restLength = 86;
-	const stiffness = 0.2;
+	const stiffness = 0.05;
 
 	const direction = createVector();
 	setDistanceNormal(direction, a.position, b.position);
@@ -130,7 +128,7 @@ export const GraphBrowser: Component<{
 	const enhanceNode = (node: string) => {
 		return {
 			name: node,
-			position: createVector(Math.random(), Math.random()),
+			position: createVector(Math.random() * 128 - 64, Math.random() * 32 - 16),
 			velocity: createVector(),
 			acceleration: createVector(),
 		};
@@ -184,6 +182,7 @@ export const GraphBrowser: Component<{
 				hookEdge(edge);
 			}
 
+			let absV = 0;
 			for (const node of nodes) {
 				node.velocity.x += node.acceleration.x;
 				node.velocity.y += node.acceleration.y;
@@ -196,33 +195,38 @@ export const GraphBrowser: Component<{
 
 				node.acceleration.x = 0;
 				node.acceleration.y = 0;
+
+				absV = Math.abs(node.velocity.x) + Math.abs(node.velocity.y);
 			}
 
-			ctx.restore();
-			ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-			ctx.save();
-			const activeRenderNode = nodes.find((n) => n.name === activeNode)!;
-			ctx.translate(
-				width() / 2 - activeRenderNode.position.x,
-				height() / 2 - activeRenderNode.position.y,
-			);
+			if (absV < 0.01) {
+				ctx.restore();
+				ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+				ctx.save();
+				const activeRenderNode = nodes.find((n) => n.name === activeNode)!;
+				ctx.translate(
+					width() / 2 - activeRenderNode.position.x,
+					height() / 2 - activeRenderNode.position.y,
+				);
 
-			for (const edge of edges) {
-				drawEdge(edge, ctx);
-			}
-
-			for (const node of nodes) {
-				if (activeNeighbours.includes(node.name)) {
-					drawNode(node, ctx, "#6572f5");
-				} else {
-					drawNode(node, ctx, "#404249");
+				for (const edge of edges) {
+					drawEdge(edge, ctx);
 				}
+
+				for (const node of nodes) {
+					if (activeNeighbours.includes(node.name)) {
+						drawNode(node, ctx, "#6572f5");
+					} else {
+						drawNode(node, ctx, "#404249");
+					}
+				}
+				drawNode(activeRenderNode, ctx, "#ee459e");
+
+				setTimeout(animate, 100);
+			} else {
+				animate();
 			}
-			drawNode(activeRenderNode, ctx, "#ee459e");
-
-			setTimeout(animate, 100);
 		};
-
 		animate();
 	});
 
