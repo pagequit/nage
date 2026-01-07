@@ -6,6 +6,7 @@ const idle: Sprite = await fromSrc("/assets/hero/idle.png", 5, 4);
 
 const { animate, process } = useEntity("barEntity", {
 	animation: createAnimation(0, 200),
+	stuff: 1,
 });
 
 animate((entity, ctx, delta) => {
@@ -19,4 +20,11 @@ animate((entity, ctx, delta) => {
 	);
 });
 
-process((entity, delta) => {});
+process((entity, delta) => {
+	entity.position.x += entity.stuff * 0.5;
+	if (entity.position.x > 64) {
+		entity.stuff = -1;
+	} else if (entity.position.x < 0) {
+		entity.stuff = 1;
+	}
+});

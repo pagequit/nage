@@ -43,7 +43,7 @@ animate((entity, ctx, delta) => {
 });
 
 process((entity, delta) => {
-	entity.position.x += entity.stuff * 0.05 * delta;
+	entity.position.x += entity.stuff * 0.5;
 	if (entity.position.x > viewport.canvas.width - 16) {
 		entity.stuff = -1;
 		entity.currentAnimation = "walk";

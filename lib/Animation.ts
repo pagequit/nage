@@ -24,15 +24,11 @@ export function animateSprite(
 	y: number,
 	delta: number,
 ): void {
-	drawSprite(ctx, sprite, animation.xIndex, animation.yIndex, x, y);
-
-	animation.frameDelta += delta;
-	if (animation.frameDelta >= animation.frameTime) {
-		animation.frameDelta = animation.frameDelta - animation.frameTime;
-
-		animation.xIndex += 1;
-		if (animation.xIndex >= sprite.xFrames) {
+	if ((animation.frameDelta += delta) > animation.frameTime) {
+		animation.frameDelta = 0;
+		if ((animation.xIndex += 1) >= sprite.xFrames) {
 			animation.xIndex = 0;
 		}
 	}
+	drawSprite(ctx, sprite, animation.xIndex, animation.yIndex, x, y);
 }

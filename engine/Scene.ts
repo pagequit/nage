@@ -128,9 +128,9 @@ export function useScene(data: SceneData): {
 		},
 		process(fn) {
 			sceneProcessMap.set(data.name, (ctx, delta) => {
-				animateEntities(ctx, delta);
 				processEntities(delta);
 				fn(ctx, delta);
+				animateEntities(ctx, delta);
 			});
 		},
 	};
