@@ -203,7 +203,12 @@ export const GraphBrowser: Component<{
 				ctx.restore();
 				ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
 				ctx.save();
-				const activeRenderNode = nodes.find((n) => n.name === activeNode)!;
+				const activeRenderNode = nodes.find((n) => n.name === activeNode);
+				if (!activeRenderNode) {
+					setTimeout(animate, 100);
+					return;
+				}
+
 				ctx.translate(
 					width() / 2 - activeRenderNode.position.x,
 					height() / 2 - activeRenderNode.position.y,

@@ -49,7 +49,7 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 		const entityInstanceMap = sceneEntiyMap.get(name)!;
 		entityInstanceMap.clear();
 
-		Promise.all(
+		await Promise.all(
 			data.entities.map(async (entity: Entity<unknown>) => {
 				await import(`#/entities/${entity.name}/index.ts`);
 
