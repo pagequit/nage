@@ -1,15 +1,13 @@
 import "./main.css";
-import { type Component, createSignal, onMount } from "solid-js";
+import { type Component, createEffect, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
 import { ItemList, type ItemsRef } from "#/dev/ItemList.tsx";
-import {
-	ArrowAutofitHeightIcon,
-	ArrowAutofitWidthIcon,
-	FileIcon,
-	ZoomScanIcon,
-} from "#/dev/icons/index.ts";
+import { ArrowAutofitHeightIcon } from "#/dev/icons/ArrowAutofitHeight.tsx";
+import { ArrowAutofitWidthIcon } from "#/dev/icons/ArrowAutofitWidth.tsx";
+import { FileIcon } from "#/dev/icons/File.tsx";
+import { ZoomScanIcon } from "#/dev/icons/ZoomScan.tsx";
 import {
 	currentScene,
 	type SceneData,
@@ -59,14 +57,21 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 	adjustGameContainer(gameContainer, width());
 
+	const [currentScale, setCurrentScale] = createSignal(viewport.initialScale);
+	const [sceneData, setSceneData] = createSignal(currentScene.data);
 	const [scenes] = createSignal(scenesRaw);
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
 
+	createEffect(() => {
+		setScale(currentScale());
+	});
+
 	const setCurrentScene = async (items: ItemsRef): Promise<void> => {
 		const name = items.find((ref) => ref.item.isActive)!.item.label;
 		await setScene(name);
+		setSceneData(currentScene.data);
 		setEntities(mapSceneEntities(currentScene.data));
 	};
 
@@ -98,27 +103,31 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	return (
 		<div class="dev-tools" style={{ width: `${width()}px` }}>
 			<div class="tool-bar">
-				<RangeSlider
-					name="scale"
-					min={1}
-					max={8}
-					step={1}
-					value={viewport.initialScale}
-					onInput={setScale}
-				>
-					<ZoomScanIcon />
-				</RangeSlider>
+				<div class="zoom-bar">
+					<button type="button" onClick={() => setCurrentScale(4)}>
+						<ZoomScanIcon />
+					</button>
+					<RangeSlider
+						name="scale"
+						min={1}
+						max={8}
+						step={1}
+						value={currentScale()}
+						onInput={(value) => setCurrentScale(value)}
+					></RangeSlider>
+					<span>{currentScale()}</span>
+				</div>
 
 				<div class="scene-props">
 					<InputField
 						name="file"
-						value={currentScene.data.name}
+						value={sceneData().name}
 						icon={FileIcon()}
 					></InputField>
 					<InputField
 						type="number"
 						name="width"
-						value={String(currentScene.data.width)}
+						value={String(sceneData().width)}
 						icon={ArrowAutofitWidthIcon()}
 						onChange={(value) => {
 							currentScene.data.width = parseInt(value);
@@ -128,7 +137,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 					<InputField
 						type="number"
 						name="height"
-						value={String(currentScene.data.height)}
+						value={String(sceneData().height)}
 						icon={ArrowAutofitHeightIcon()}
 						onChange={(value) => {
 							currentScene.data.height = parseInt(value);

@@ -108,6 +108,26 @@
 	user-select: none;
 }
 
+.zoom-bar {
+	display: flex;
+	gap: var(--sp-2);
+
+	button {
+		color: inherit;
+		border-radius: var(--sp-1);
+		border: none;
+		background: transparent;
+		padding: 0;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	button:hover {
+		background: var(--c-bg-3);
+	}
+}
+
 .scene-props {
 	display: flex;
 	gap: var(--sp-2);

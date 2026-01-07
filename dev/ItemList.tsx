@@ -10,12 +10,10 @@ import {
 	type Signal,
 	Switch,
 } from "solid-js";
-import {
-	ArrowNarrowDownIcon,
-	ArrowNarrowUpIcon,
-	ArrowsSortIcon,
-	ChevronDownIcon,
-} from "#/dev/icons/index.ts";
+import { ArrowNarrowDownIcon } from "#/dev/icons/ArrowNarrowDown.tsx";
+import { ArrowNarrowUpIcon } from "#/dev/icons/ArrowNarrowUp.tsx";
+import { ArrowsSortIcon } from "#/dev/icons/ArrowsSort.tsx";
+import { ChevronDownIcon } from "#/dev/icons/ChevronDown.tsx";
 
 export type ListItem = { label: string; isActive: boolean };
 

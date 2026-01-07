@@ -6,7 +6,9 @@ import {
 	For,
 	Show,
 } from "solid-js";
-import { FileIcon, FolderIcon, FolderOpenIcon } from "#/dev/icons/index.ts";
+import { FileIcon } from "#/dev/icons/File.tsx";
+import { FolderIcon } from "#/dev/icons/Folder.tsx";
+import { FolderOpenIcon } from "#/dev/icons/FolderOpen.tsx";
 
 export type BrowserFile = {
 	path: string;
