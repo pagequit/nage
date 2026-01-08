@@ -11,6 +11,7 @@ import { ZoomScanIcon } from "#/dev/icons/ZoomScan.tsx";
 import {
 	currentScene,
 	type SceneData,
+	sceneChangedHandlers,
 	sceneGraph,
 	setScene,
 } from "#/engine/Scene.ts";
@@ -71,9 +72,12 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	const setCurrentScene = async (items: ItemsRef): Promise<void> => {
 		const name = items.find((ref) => ref.item.isActive)!.item.label;
 		await setScene(name);
-		setSceneData(currentScene.data);
-		setEntities(mapSceneEntities(currentScene.data));
 	};
+
+	sceneChangedHandlers.add((data) => {
+		setSceneData(data);
+		setEntities(mapSceneEntities(data));
+	});
 
 	const setActiveEntity = (items: ItemsRef): void => {
 		const activeRef = items.find((ref) => ref.item.isActive)!;

@@ -33,12 +33,20 @@ export type Scene = {
 };
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
+export type PreProcess = () => void;
+export type PostProcess = () => void;
 
-export type SceneChangeCallback = (from: Scene, to: Scene) => void;
+export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
+
+const sceneProcessMap = new Map<string, Process>();
+const scenePreProcessMap = new Map<string, PreProcess>();
+const scenePostProcessMap = new Map<string, PostProcess>();
 
 const sceneDataMap = new Map<string, SceneData>();
-const sceneProcessMap = new Map<string, Process>();
 const sceneEntiyMap = new Map<string, EntityInstanceMap>();
+
+export const sceneChangedHandlers = new Set<SceneChangeHandler>();
+
 export const sceneGraph: Graph<string> = new Map();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
@@ -112,6 +120,8 @@ export function useScene(data: SceneData): {
 		names: T,
 	) => (name: T[number]) => Promise<void>;
 	process: (fn: Process) => void;
+	preProcess: (fn: PreProcess) => void;
+	postProcess: (fn: PreProcess) => void;
 } {
 	sceneDataMap.set(data.name, data);
 	sceneEntiyMap.set(data.name, new Map());
@@ -133,6 +143,12 @@ export function useScene(data: SceneData): {
 				animateEntities(ctx, delta);
 			});
 		},
+		preProcess(fn): void {
+			scenePreProcessMap.set(data.name, fn);
+		},
+		postProcess(fn): void {
+			scenePostProcessMap.set(data.name, fn);
+		},
 	};
 }
 
@@ -148,10 +164,24 @@ export async function setScene(name: string): Promise<void> {
 	const process = sceneProcessMap.get(name)!;
 	const entityInstanceMap = sceneEntiyMap.get(name)!;
 
+	const preProcess = scenePreProcessMap.get(name);
+	if (preProcess) {
+		preProcess();
+	}
+
+	const postProcess = scenePostProcessMap.get(currentScene.data.name);
+	if (postProcess) {
+		postProcess();
+	}
+
 	currentScene.data = data;
 	self.dispatchEvent(new Event("resize"));
 
 	currentScene.process = process;
 
 	currentScene.entityInstanceMap = entityInstanceMap;
+
+	for (const handler of sceneChangedHandlers.values()) {
+		handler(data, currentScene.data);
+	}
 }
