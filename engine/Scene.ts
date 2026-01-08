@@ -33,7 +33,7 @@ export type Scene = {
 };
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
-export type PreProcess = () => void;
+export type PreProcess = (entities: EntityInstanceMap) => void;
 export type PostProcess = () => void;
 
 export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
@@ -121,7 +121,7 @@ export function useScene(data: SceneData): {
 	) => (name: T[number]) => Promise<void>;
 	process: (fn: Process) => void;
 	preProcess: (fn: PreProcess) => void;
-	postProcess: (fn: PreProcess) => void;
+	postProcess: (fn: PostProcess) => void;
 } {
 	sceneDataMap.set(data.name, data);
 	sceneEntiyMap.set(data.name, new Map());
@@ -166,12 +166,12 @@ export async function setScene(name: string): Promise<void> {
 
 	const preProcess = scenePreProcessMap.get(name);
 	if (preProcess) {
-		preProcess();
+		preProcess(sceneEntiyMap.get(name)!);
 	}
 
 	const postProcess = scenePostProcessMap.get(currentScene.data.name);
 	if (postProcess) {
-		postProcess();
+		postProcess(sceneEntiyMap.get(name)!);
 	}
 
 	currentScene.data = data;
