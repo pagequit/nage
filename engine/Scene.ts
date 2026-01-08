@@ -33,8 +33,8 @@ export type Scene = {
 };
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
-export type PreProcess = (entities: EntityInstanceMap) => void;
-export type PostProcess = () => void;
+export type PreProcess = (entityInstanceMap: EntityInstanceMap) => void;
+export type PostProcess = (entityInstanceMap: EntityInstanceMap) => void;
 
 export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
 
