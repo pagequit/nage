@@ -38,15 +38,12 @@ export type PostProcess = (entityInstanceMap: EntityInstanceMap) => void;
 
 export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
 
-const sceneProcessMap = new Map<string, Process>();
-const scenePreProcessMap = new Map<string, PreProcess>();
-const scenePostProcessMap = new Map<string, PostProcess>();
-
-const sceneDataMap = new Map<string, SceneData>();
-const sceneEntiyMap = new Map<string, EntityInstanceMap>();
-
+export const sceneProcessMap = new Map<string, Process>();
+export const scenePreProcessMap = new Map<string, PreProcess>();
+export const scenePostProcessMap = new Map<string, PostProcess>();
+export const sceneDataMap = new Map<string, SceneData>();
+export const sceneEntiyMap = new Map<string, EntityInstanceMap>();
 export const sceneChangedHandlers = new Set<SceneChangeHandler>();
-
 export const sceneGraph: Graph<string> = new Map();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(

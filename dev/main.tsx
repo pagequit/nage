@@ -13,6 +13,7 @@ import {
 	type SceneData,
 	sceneChangedHandlers,
 	sceneGraph,
+	sceneProcessMap,
 	setScene,
 } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
@@ -91,7 +92,22 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		const instance =
 			instances[entityRefs.findIndex((ref) => ref.item.isActive)];
 
-		console.log(instance.position);
+		const processProxy = sceneProcessMap.get(currentScene.data.name)!;
+		const ctx = viewport.ctx;
+		currentScene.process = (...args) => {
+			processProxy(...args);
+
+			ctx.save();
+			ctx.lineWidth = 1;
+			ctx.strokeStyle = "#ee459e";
+			viewport.ctx.strokeRect(
+				instance.position.x + 0.5,
+				instance.position.y + 0.5,
+				16 - 1,
+				16 - 1,
+			);
+			ctx.restore();
+		};
 	};
 
 	onMount(() => {
