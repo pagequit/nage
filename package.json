@@ -1,7 +1,9 @@
 {
 	"name": "nage",
 	"scripts": {
-		"dev": "vite"
+		"dev": "vite",
+		"preview": "vite build && vite preview",
+		"check": "biome check --write"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.11",

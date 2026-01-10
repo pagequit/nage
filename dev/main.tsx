@@ -88,6 +88,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	};
 
 	sceneChangedHandlers.add((data) => {
+		setActiveEntity(null);
 		setSceneData(data);
 		setEntities(mapSceneEntities(data));
 	});
