@@ -1,5 +1,11 @@
 import "./main.css";
-import { type Component, createEffect, createSignal, onMount } from "solid-js";
+import {
+	type Component,
+	createEffect,
+	createSignal,
+	onMount,
+	Show,
+} from "solid-js";
 import { render } from "solid-js/web";
 import { InputField } from "#/dev/controls/InputField.tsx";
 import { RangeSlider } from "#/dev/controls/RangeSlider.tsx";
@@ -7,7 +13,10 @@ import { ItemList, type ItemsRef } from "#/dev/ItemList.tsx";
 import { ArrowAutofitHeightIcon } from "#/dev/icons/ArrowAutofitHeight.tsx";
 import { ArrowAutofitWidthIcon } from "#/dev/icons/ArrowAutofitWidth.tsx";
 import { FileIcon } from "#/dev/icons/File.tsx";
+import { LetterXIcon } from "#/dev/icons/LetterX.tsx";
+import { LetterYIcon } from "#/dev/icons/LetterY.tsx";
 import { ZoomScanIcon } from "#/dev/icons/ZoomScan.tsx";
+import type { Entity } from "#/engine/Entity.ts";
 import {
 	currentScene,
 	type SceneData,
@@ -65,6 +74,9 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
+	const [activeEntity, setActiveEntity] = createSignal<null | Entity<unknown>>(
+		null,
+	);
 
 	createEffect(() => {
 		setScale(currentScale());
@@ -80,7 +92,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		setEntities(mapSceneEntities(data));
 	});
 
-	const setActiveEntity = (items: ItemsRef): void => {
+	const selectEntity = (items: ItemsRef): void => {
 		const activeRef = items.find((ref) => ref.item.isActive)!;
 		const instances = currentScene.entityInstanceMap.get(
 			activeRef.item.label,
@@ -91,6 +103,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		);
 		const instance =
 			instances[entityRefs.findIndex((ref) => ref.item.isActive)];
+
+		setActiveEntity(instance);
 
 		const processProxy = sceneProcessMap.get(currentScene.data.name)!;
 		const ctx = viewport.ctx;
@@ -169,7 +183,30 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
 				<GraphBrowser graph={sceneGraph} />
 
-				<ItemList name="Entities" handler={setActiveEntity} items={entities} />
+				<ItemList name="Entities" handler={selectEntity} items={entities} />
+
+				<Show when={activeEntity() !== null}>
+					<div class="entity-props">
+						<InputField
+							type="number"
+							name="x"
+							value={String(activeEntity()!.position.x)}
+							icon={LetterXIcon()}
+							onChange={(value) => {
+								activeEntity()!.position.x = parseInt(value);
+							}}
+						></InputField>
+						<InputField
+							type="number"
+							name="y"
+							value={String(activeEntity()!.position.y)}
+							icon={LetterYIcon()}
+							onChange={(value) => {
+								activeEntity()!.position.y = parseInt(value);
+							}}
+						></InputField>
+					</div>
+				</Show>
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>

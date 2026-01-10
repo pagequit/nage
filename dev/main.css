@@ -138,3 +138,9 @@
 		flex-basis: calc(50% - var(--sp-1));
 	}
 }
+
+.entity-props {
+	display: grid;
+	gap: var(--sp-2);
+	grid-template-columns: 1fr 1fr;
+}
