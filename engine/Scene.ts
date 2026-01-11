@@ -48,7 +48,7 @@ export const sceneGraph: Graph<string> = new Map();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
-		await import(`#/scenes/${name}/index.ts`);
+		await import(`#/scenes/${name}/scene.ts`);
 
 		const data = sceneDataMap.get(name)!;
 		const entityInstanceMap = sceneEntiyMap.get(name)!;
@@ -56,7 +56,7 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 
 		await Promise.all(
 			data.entities.map(async (entity: Entity<unknown>) => {
-				await import(`#/entities/${entity.name}/index.ts`);
+				await import(`#/entities/${entity.name}/entity.ts`);
 
 				if (!entityInstanceMap.has(entity.name)) {
 					entityInstanceMap.set(entity.name, {

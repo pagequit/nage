@@ -22,7 +22,7 @@ const { animate, process } = useEntity<{
 	};
 	currentAnimation: "idle" | "walk";
 	stuff: number;
-}>("testEntity", {
+}>(import.meta, {
 	animations: {
 		idle: createAnimation(2, 500),
 		walk: createAnimation(2, 250),

@@ -30,7 +30,7 @@ import { GraphBrowser } from "./GraphBrowser.tsx";
 
 async function fetchScenes(): Promise<string[]> {
 	const indexRef: string[] = await (await fetch(`/api/scenes`)).json();
-	const items = indexRef.filter((value) => value.includes("index"));
+	const items = indexRef.filter((value) => value.includes("scene"));
 
 	return items.map((i) => i.substring(1).split("/")[0]);
 }
