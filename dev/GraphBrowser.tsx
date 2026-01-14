@@ -7,6 +7,7 @@ import {
 	getNeighbours,
 	type Node,
 } from "#/lib/Graph.ts";
+import { mulberry32 } from "#/lib/mulberry32.ts";
 import {
 	createVector,
 	getDistance,
@@ -119,8 +120,10 @@ function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 
 export const GraphBrowser: Component<{
 	graph: Graph<string>;
+	seed: number;
 }> = (props) => {
 	let canvasRef!: HTMLCanvasElement;
+	const next = mulberry32(props.seed);
 
 	const [width] = createSignal(300);
 	const [height] = createSignal(300);
@@ -128,7 +131,7 @@ export const GraphBrowser: Component<{
 	const enhanceNode = (node: string) => {
 		return {
 			name: node,
-			position: createVector(Math.random() * 128 - 64, Math.random() * 32 - 16),
+			position: createVector(next() * 128 - 64, next() * 32 - 16),
 			velocity: createVector(),
 			acceleration: createVector(),
 		};

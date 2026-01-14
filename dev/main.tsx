@@ -182,7 +182,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
-				<GraphBrowser graph={sceneGraph} />
+				<GraphBrowser graph={sceneGraph} seed={1308146451} />
 
 				<ItemList name="Entities" handler={selectEntity} items={entities} />
 
