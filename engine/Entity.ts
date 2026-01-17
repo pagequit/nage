@@ -1,3 +1,4 @@
+import type { Animation } from "#/engine/Animation.ts";
 import { createVector, type Vector } from "#/lib/Vector.ts";
 
 export type Indirect = never;
@@ -5,6 +6,7 @@ export type Indirect = never;
 export type Entity<T> = {
 	name: string;
 	position: Vector;
+	animation: Animation;
 } & T;
 
 export type Animate<T> = (
@@ -19,7 +21,7 @@ export const entityMap = new Map<string, Entity<unknown>>();
 export const entityAnimateMap = new Map<string, Animate<Indirect>>();
 export const entityProcessMap = new Map<string, Process<Indirect>>();
 
-export function useEntity<T extends object>(
+export function useEntity<T extends { animation: Animation }>(
 	meta: { url: string },
 	state: T,
 ): {
