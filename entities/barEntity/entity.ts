@@ -1,18 +1,17 @@
+import { createAnimation, playAnimation } from "#/engine/Animation.ts";
 import { useEntity } from "#/engine/Entity.ts";
-import { animateSprite, createAnimation } from "#/lib/Animation.ts";
 import { fromSrc, type Sprite } from "#/lib/Sprite.ts";
 
 const idle: Sprite = await fromSrc("/assets/hero/idle.png", 5, 4);
 
 const { animate, process } = useEntity(import.meta, {
-	animation: createAnimation(0, 200),
+	animation: createAnimation(idle, 200, 0),
 	stuff: 1,
 });
 
 animate((entity, ctx, delta) => {
-	animateSprite(
+	playAnimation(
 		ctx,
-		idle,
 		entity.animation,
 		entity.position.x,
 		entity.position.y,

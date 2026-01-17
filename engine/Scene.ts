@@ -66,12 +66,16 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 					});
 				}
 
-				const instance: Entity<unknown> = structuredClone({
-					...entityMap.get(entity.name)!,
-					...entity,
-				});
-
-				entityInstanceMap.get(entity.name)!.instances.push(instance);
+				try {
+					entityInstanceMap.get(entity.name)!.instances.push(
+						structuredClone({
+							...entityMap.get(entity.name)!,
+							...entity,
+						}),
+					);
+				} catch (error) {
+					console.error(entity.name, error);
+				}
 			}),
 		);
 	},

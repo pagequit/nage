@@ -16,6 +16,7 @@ import { FileIcon } from "#/dev/icons/File.tsx";
 import { LetterXIcon } from "#/dev/icons/LetterX.tsx";
 import { LetterYIcon } from "#/dev/icons/LetterY.tsx";
 import { ZoomScanIcon } from "#/dev/icons/ZoomScan.tsx";
+import { type Animation, spriteMap } from "#/engine/Animation.ts";
 import type { Entity } from "#/engine/Entity.ts";
 import {
 	currentScene,
@@ -106,6 +107,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 			instances[entityRefs.findIndex((ref) => ref.item.isActive)];
 
 		setActiveEntity(instance);
+		const sprite = spriteMap.get(instance.animation.spriteSrc)!;
 
 		const processProxy = sceneProcessMap.get(currentScene.data.name)!;
 		const ctx = viewport.ctx;
@@ -114,12 +116,20 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 			ctx.save();
 			ctx.lineWidth = 1;
-			ctx.strokeStyle = "#ee459e";
+			ctx.strokeStyle = "#6572f5";
 			viewport.ctx.strokeRect(
-				instance.position.x + 0.5,
-				instance.position.y + 0.5,
-				16 - 1,
-				16 - 1,
+				instance.position.x - 0.5,
+				instance.position.y - 0.5,
+				sprite.image.width / sprite.xFrames + 1,
+				sprite.image.height / sprite.yFrames + 1,
+			);
+
+			ctx.fillStyle = "#ee459e";
+			viewport.ctx.fillRect(
+				instance.position.x - 1,
+				instance.position.y - 1,
+				2,
+				2,
 			);
 			ctx.restore();
 		};
@@ -182,7 +192,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				</div>
 
 				<ItemList name="Scenes" handler={setCurrentScene} items={scenes} />
-				<GraphBrowser graph={sceneGraph} seed={1308146451} />
+				<GraphBrowser graph={sceneGraph} seed={1300346452} />
 
 				<ItemList name="Entities" handler={selectEntity} items={entities} />
 

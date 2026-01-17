@@ -1,12 +1,11 @@
-import charIdle from "#/assets/char-idle.png";
 import { createAnimation, playAnimation } from "#/engine/Animation.ts";
 import { useEntity } from "#/engine/Entity.ts";
 import { fromSrc, type Sprite } from "#/lib/Sprite.ts";
 
-const idle: Sprite = await fromSrc(charIdle, 2, 4);
+const sprite: Sprite = await fromSrc("./assets/portal.png", 3, 1);
 
-const { animate, process } = useEntity(import.meta, {
-	animation: createAnimation(idle, 500, 2),
+const { animate } = useEntity(import.meta, {
+	animation: createAnimation(sprite, 400, 0),
 });
 
 animate((entity, ctx, delta) => {
@@ -18,5 +17,3 @@ animate((entity, ctx, delta) => {
 		delta,
 	);
 });
-
-process((entity, delta) => {});
