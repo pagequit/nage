@@ -46,6 +46,8 @@ export const sceneEntiyMap = new Map<string, EntityInstanceMap>();
 export const sceneChangedHandlers = new Set<SceneChangeHandler>();
 export const sceneGraph: Graph<string> = new Map();
 
+const sceneInstancesMap = new Map<string, Array<Entity<unknown>>>();
+
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
 		await import(`#/scenes/${name}/scene.ts`);
@@ -93,10 +95,13 @@ export const currentScene: Scene = {
 };
 
 function animateEntities(ctx: CanvasRenderingContext2D, delta: number): void {
-	for (const entity of currentScene.entityInstanceMap.values()) {
-		for (const instance of entity.instances) {
-			entity.animate(instance as Entity<Indirect>, ctx, delta);
-		}
+	const instances = sceneInstancesMap.get(currentScene.data.name)!;
+	instances.sort((a, b) => a.position.y - b.position.y);
+
+	for (const instance of instances) {
+		currentScene.entityInstanceMap
+			.get(instance.name)!
+			.animate(instance as Entity<Indirect>, ctx, delta);
 	}
 }
 
@@ -164,6 +169,18 @@ export async function setScene(name: string): Promise<void> {
 	const data = sceneDataMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
 	const entityInstanceMap = sceneEntiyMap.get(name)!;
+	sceneInstancesMap.set(
+		data.name,
+		entityInstanceMap.values().reduce(
+			(acc, cur) => {
+				for (const instance of cur.instances) {
+					acc.push(instance);
+				}
+				return acc;
+			},
+			[] as Array<Entity<unknown>>,
+		),
+	);
 
 	const preProcess = scenePreProcessMap.get(name);
 	if (preProcess) {
