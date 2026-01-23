@@ -21,14 +21,13 @@ export const entityMap = new Map<string, Entity<unknown>>();
 export const entityAnimateMap = new Map<string, Animate<Indirect>>();
 export const entityProcessMap = new Map<string, Process<Indirect>>();
 
-export function useEntity<T extends { animation: Animation }>(
-	meta: { url: string },
+export function defineEntity<T extends { animation: Animation }>(
+	name: string,
 	state: T,
 ): {
 	animate: (fn: Animate<T>) => void;
 	process: (fn: Process<T>) => void;
 } {
-	const name = meta.url.match(/entities\/(.+)\/entity\.ts$/)![1];
 	entityMap.set(name, {
 		name,
 		position: createVector(),

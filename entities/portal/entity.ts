@@ -1,10 +1,10 @@
 import { createAnimation, playAnimation } from "#/engine/Animation.ts";
-import { useEntity } from "#/engine/Entity.ts";
+import { defineEntity } from "#/engine/Entity.ts";
 import { fromSrc, type Sprite } from "#/lib/Sprite.ts";
 
 const sprite: Sprite = await fromSrc("./assets/portal.png", 3, 1);
 
-const { animate } = useEntity(import.meta, {
+const { animate } = defineEntity("portal", {
 	animation: createAnimation(sprite, 400, 0),
 });
 

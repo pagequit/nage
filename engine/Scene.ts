@@ -1,5 +1,3 @@
-import { useWithAsyncCache } from "#/lib/cache.ts";
-import { type Graph, getNeighbours } from "#/lib/Graph.ts";
 import {
 	type Animate as AnimateEntity,
 	type Entity,
@@ -8,7 +6,9 @@ import {
 	entityProcessMap,
 	type Indirect,
 	type Process as ProcessEntity,
-} from "./Entity.ts";
+} from "#/engine/Entity.ts";
+import { useWithAsyncCache } from "#/lib/cache.ts";
+import { type Graph, getNeighbours } from "#/lib/Graph.ts";
 
 export type SceneData = {
 	name: string;
@@ -121,7 +121,7 @@ function linkScenes(a: string, b: string): void {
 	}
 }
 
-export function useScene(data: SceneData): {
+export function defineScene(data: SceneData): {
 	linkScenes: <T extends readonly string[]>(
 		names: T,
 	) => (name: T[number]) => Promise<void>;

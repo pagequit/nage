@@ -4,14 +4,14 @@
 	"height": 48,
 	"entities": [
 		{
-			"name": "fooEntity",
+			"name": "hero",
 			"position": {
 				"x": 0,
 				"y": 0
 			}
 		},
 		{
-			"name": "fooEntity",
+			"name": "hero",
 			"position": {
 				"x": 24,
 				"y": 16

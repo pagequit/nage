@@ -1,7 +1,9 @@
-import { useScene } from "#/engine/Scene.ts";
+import { pointer } from "#/engine/Pointer.ts";
+import { defineScene } from "#/engine/Scene.ts";
+import type { Vector } from "#/lib/Vector.ts";
 import data from "./data.json";
 
-const { process, preProcess, linkScenes } = useScene(data);
+const { process, preProcess, linkScenes } = defineScene(data);
 
 linkScenes(["fooScene", "fuzzScene"] as const);
 
@@ -13,4 +15,19 @@ preProcess((entityInstanceMap) => {
 	instance.position.y = data.height - 16;
 });
 
-process((_ctx, _delta) => {});
+function drawPoint(
+	ctx: CanvasRenderingContext2D,
+	position: Vector,
+	radius: number = 4,
+): void {
+	ctx.beginPath();
+	ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
+	ctx.strokeStyle = "#ff9000";
+	ctx.stroke();
+}
+
+process((ctx, delta) => {
+	if (!pointer.isDown) {
+		drawPoint(ctx, pointer.position);
+	}
+});

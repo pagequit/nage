@@ -1,3 +1,4 @@
+import { listenPointer } from "#/engine/Pointer.ts";
 import { currentScene, setScene } from "#/engine/Scene.ts";
 import {
 	initViewport,
@@ -29,6 +30,8 @@ function animate(timestamp: number): void {
 	self.addEventListener("resize", () => {
 		resizeCanvas(currentScene.data.width, currentScene.data.height);
 	});
+
+	listenPointer();
 
 	animate(delta);
 })();

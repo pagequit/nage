@@ -4,7 +4,7 @@
 	"height": 48,
 	"entities": [
 		{
-			"name": "fooEntity",
+			"name": "hero",
 			"position": {
 				"x": 0,
 				"y": 0

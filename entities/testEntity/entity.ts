@@ -5,7 +5,7 @@ import {
 	createAnimation,
 	playAnimation,
 } from "#/engine/Animation.ts";
-import { useEntity } from "#/engine/Entity.ts";
+import { defineEntity } from "#/engine/Entity.ts";
 import { viewport } from "#/engine/Viewport.ts";
 import { loadImage } from "#/lib/loadImage.ts";
 import { createSprite } from "#/lib/Sprite.ts";
@@ -14,19 +14,20 @@ const sprites = {
 	idle: createSprite(await loadImage(charIdle), 2, 4),
 	walk: createSprite(await loadImage(charWalk), 4, 4),
 };
+
 const animations = {
 	idle: createAnimation(sprites.idle, 500, 2),
 	walk: createAnimation(sprites.walk, 250, 2),
-} as const;
+};
 
-const { animate, process } = useEntity<{
+const { animate, process } = defineEntity<{
 	animation: Animation;
 	animations: {
 		idle: Animation;
 		walk: Animation;
 	};
 	stuff: number;
-}>(import.meta, {
+}>("testEntity", {
 	animations,
 	animation: animations.idle,
 	stuff: 1,

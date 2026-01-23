@@ -40,11 +40,6 @@
 	--rgb-black: 30, 31, 34;
 	--c-black: rgb(var(--rgb-black));
 
-	--c-primary: var(--c-blurple);
-	--c-secondary: var(--c-fuchsia);
-	--c-alert: var(--c-orange);
-	--c-error: var(--c-red);
-
 	--c-bg-0: rgb(30, 31, 34);
 	--c-bg-1: rgb(43, 45, 49);
 	--c-bg-2: rgb(49, 51, 56);
@@ -81,7 +76,7 @@
 	*:focus {
 		outline-width: 2px;
 		outline-style: solid;
-		outline-color: var(--c-primary);
+		outline-color: var(--c-blurple);
 	}
 }
 
