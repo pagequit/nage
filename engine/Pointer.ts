@@ -54,11 +54,11 @@ function adjustPointerPosition(
 	clientX: number,
 	clientY: number,
 ): void {
-	const { ctx, translation: position, initialScale } = viewport;
+	const { ctx, translation: position, scale } = viewport;
 	const clientRect = ctx.canvas.getBoundingClientRect();
 
-	pointer.position.x = (clientX - clientRect.x + position.x) / initialScale;
-	pointer.position.y = (clientY - clientRect.y + position.y) / initialScale;
+	pointer.position.x = (clientX - clientRect.x + position.x) / scale;
+	pointer.position.y = (clientY - clientRect.y + position.y) / scale;
 }
 
 export function listenPointer(): () => void {

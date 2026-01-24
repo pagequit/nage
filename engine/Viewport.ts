@@ -1,7 +1,7 @@
 import { createVector, type Vector } from "#/lib/Vector.ts";
 
 export type Viewport = {
-	initialScale: number;
+	scale: number;
 	imageSmoothing: CanvasImageSmoothing;
 	translation: Vector;
 	ctx: CanvasRenderingContext2D;
@@ -11,7 +11,7 @@ export type Viewport = {
 };
 
 export const viewport: Viewport = {
-	initialScale: 4,
+	scale: 4,
 	imageSmoothing: {
 		imageSmoothingEnabled: false,
 		imageSmoothingQuality: "low",
@@ -45,13 +45,13 @@ export function initViewport(): void {
 }
 
 export function setScale(scale: number): void {
-	viewport.initialScale = scale;
+	viewport.scale = scale;
 	self.dispatchEvent(new Event("resize"));
 }
 
 export function resizeCanvas(width: number, height: number): void {
 	const {
-		initialScale,
+		scale: initialScale,
 		imageSmoothing,
 		ctx,
 		canvas,

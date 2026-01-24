@@ -69,7 +69,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 	adjustGameContainer(gameContainer, width());
 
-	const [currentScale, setCurrentScale] = createSignal(viewport.initialScale);
+	const [currentScale, setCurrentScale] = createSignal(viewport.scale);
 	const [sceneData, setSceneData] = createSignal(currentScene.data);
 	const [scenes] = createSignal(scenesRaw);
 	const [entities, setEntities] = createSignal(

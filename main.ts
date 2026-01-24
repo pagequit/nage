@@ -6,6 +6,7 @@ import {
 	resizeCanvas,
 	viewport,
 } from "#/engine/Viewport.ts";
+import { listenKeyboard } from "./engine/Keyboard.ts";
 
 let then = self.performance.now();
 let delta = 0;
@@ -32,6 +33,7 @@ function animate(timestamp: number): void {
 	});
 
 	listenPointer();
+	listenKeyboard();
 
 	animate(delta);
 })();
