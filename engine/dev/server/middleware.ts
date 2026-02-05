@@ -17,11 +17,12 @@ function buildBrowserIndex(dir: string): string[] {
 		});
 }
 
-function getScenes(req: IncomingMessage, res: ServerResponse) {
+function getScenes(_req: IncomingMessage, res: ServerResponse) {
 	const sceneData = buildBrowserIndex(`${root}/game/scenes`);
+	const json = JSON.stringify(sceneData);
 
 	res.writeHead(200, { "Content-Type": "application/json" });
-	res.end(JSON.stringify(sceneData));
+	res.end(json);
 }
 
 function get(req: IncomingMessage, res: ServerResponse): void {
