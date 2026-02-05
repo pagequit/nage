@@ -1,6 +1,6 @@
 import { readdirSync, writeFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { root } from "../../../vite.config.ts";
+import { root } from "#/vite.config.ts";
 
 function buildBrowserIndex(dir: string): string[] {
 	const dirents = readdirSync(dir, {
