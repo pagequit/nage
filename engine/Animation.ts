@@ -1,4 +1,4 @@
-import { drawSprite, type Sprite } from "#/lib/Sprite.ts";
+import { drawSprite, type Sprite } from "./Sprite.ts";
 
 export const spriteMap = new Map<string, Sprite>();
 

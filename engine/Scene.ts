@@ -6,9 +6,9 @@ import {
 	entityProcessMap,
 	type Indirect,
 	type Process as ProcessEntity,
-} from "#/engine/Entity.ts";
-import { useWithAsyncCache } from "#/lib/cache.ts";
-import { type Graph, getNeighbours } from "#/lib/Graph.ts";
+} from "./Entity.ts";
+import { type Graph, getNeighbours } from "./Graph.ts";
+import { useWithAsyncCache } from "./lib/cache.ts";
 
 export type SceneData = {
 	name: string;
@@ -50,7 +50,7 @@ const sceneInstancesMap = new Map<string, Array<Entity<unknown>>>();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
-		await import(`#/scenes/${name}/scene.ts`);
+		await import(`#/game/scenes/${name}/scene.ts`);
 
 		const data = sceneDataMap.get(name)!;
 		const entityInstanceMap = sceneEntiyMap.get(name)!;
@@ -58,7 +58,7 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 
 		await Promise.all(
 			data.entities.map(async (entity: Entity<unknown>) => {
-				await import(`#/entities/${entity.name}/entity.ts`);
+				await import(`#/game/entities/${entity.name}/entity.ts`);
 
 				if (!entityInstanceMap.has(entity.name)) {
 					entityInstanceMap.set(entity.name, {

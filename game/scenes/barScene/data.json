@@ -1,0 +1,14 @@
+{
+	"name": "barScene",
+	"width": 240,
+	"height": 160,
+	"entities": [
+		{
+			"name": "hero",
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		}
+	]
+}

@@ -1,4 +1,4 @@
-import { createVector, type Vector } from "#/lib/Vector.ts";
+import { createVector, type Vector } from "./Vector.ts";
 
 export type Viewport = {
 	scale: number;

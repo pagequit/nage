@@ -1,0 +1,21 @@
+{
+	"name": "fooScene",
+	"width": 80,
+	"height": 48,
+	"entities": [
+		{
+			"name": "hero",
+			"position": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		{
+			"name": "testEntity",
+			"position": {
+				"x": 24,
+				"y": 16
+			}
+		}
+	]
+}

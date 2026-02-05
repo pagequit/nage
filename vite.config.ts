@@ -1,10 +1,11 @@
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import solidPlugin from "vite-plugin-solid";
-import middleware from "#/dev/server/middleware.ts";
+import middleware from "#/engine/dev/server/middleware.ts";
 
 export const host = "localhost";
 export const port = 3080;
+export const root = fileURLToPath(new URL("./", import.meta.url));
 
 function devTools(): Plugin {
 	return {
@@ -21,7 +22,7 @@ export default defineConfig({
 	plugins: [solidPlugin(), devTools()],
 	resolve: {
 		alias: {
-			"#/": fileURLToPath(new URL("./", import.meta.url)),
+			"#/": root,
 		},
 	},
 });

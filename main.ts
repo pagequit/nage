@@ -1,3 +1,4 @@
+import { listenKeyboard } from "#/engine/Keyboard.ts";
 import { listenPointer } from "#/engine/Pointer.ts";
 import { currentScene, setScene } from "#/engine/Scene.ts";
 import {
@@ -6,7 +7,6 @@ import {
 	resizeCanvas,
 	viewport,
 } from "#/engine/Viewport.ts";
-import { listenKeyboard } from "./engine/Keyboard.ts";
 
 let then = self.performance.now();
 let delta = 0;
@@ -21,7 +21,7 @@ function animate(timestamp: number): void {
 
 (async () => {
 	if (import.meta.env.DEV) {
-		import("#/dev/main.tsx").then((m) => m.use(viewport.gameContainer));
+		import("#/engine/dev/main").then((m) => m.use(viewport.gameContainer));
 	}
 
 	initViewport();

@@ -1,5 +1,5 @@
-import type { Animation } from "#/engine/Animation.ts";
-import { createVector, type Vector } from "#/lib/Vector.ts";
+import type { Animation } from "./Animation.ts";
+import { createVector, type Vector } from "./Vector.ts";
 
 export type Indirect = never;
 

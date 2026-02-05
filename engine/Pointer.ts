@@ -1,4 +1,4 @@
-import type { Vector } from "#/lib/Vector.ts";
+import type { Vector } from "./Vector.ts";
 import { viewport } from "./Viewport.ts";
 
 export type Pointer = {
