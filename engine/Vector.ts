@@ -7,6 +7,13 @@ export function createVector(x: number = 0, y: number = 0): Vector {
 	return { x, y };
 }
 
+export function copyVector(vector: Vector): Vector {
+	return {
+		x: vector.x,
+		y: vector.y,
+	};
+}
+
 export function fromPolar(direction: number, magnitude: number): Vector {
 	return {
 		x: Math.cos(direction) * magnitude,

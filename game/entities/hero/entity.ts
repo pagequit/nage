@@ -5,6 +5,8 @@ import { pointer } from "#/engine/Pointer.ts";
 import { fromSrc, type Sprite } from "#/engine/Sprite.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
+// import { moveAndCollide } from "#/some/where.ts";
+
 const idle: Sprite = await fromSrc(charIdle, 2, 4);
 
 const { animate, process } = defineEntity("hero", {

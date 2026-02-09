@@ -1,6 +1,6 @@
+import { drawCircle } from "#/engine/Circle";
 import { pointer } from "#/engine/Pointer.ts";
 import { defineScene } from "#/engine/Scene.ts";
-import type { Vector } from "#/engine/Vector.ts";
 import data from "./data.json";
 
 const { process, preProcess, linkScenes } = defineScene(data);
@@ -15,19 +15,11 @@ preProcess((entityInstanceMap) => {
 	instance.position.y = data.height - 16;
 });
 
-function drawPoint(
-	ctx: CanvasRenderingContext2D,
-	position: Vector,
-	radius: number = 4,
-): void {
-	ctx.beginPath();
-	ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
-	ctx.strokeStyle = "#ff9000";
-	ctx.stroke();
-}
-
 process((ctx, delta) => {
 	if (!pointer.isDown) {
-		drawPoint(ctx, pointer.position);
+		drawCircle(ctx, {
+			position: pointer.position,
+			radius: 4,
+		});
 	}
 });
