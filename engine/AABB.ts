@@ -34,8 +34,8 @@ export function drawAABB(
 	ctx.save();
 	ctx.strokeStyle = color;
 	ctx.strokeRect(
-		Math.round(aabb.position.x) - 0.5,
-		Math.round(aabb.position.y) - 0.5,
+		aabb.position.x - 0.5,
+		aabb.position.y - 0.5,
 		aabb.width,
 		aabb.height,
 	);

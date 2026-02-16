@@ -9,6 +9,7 @@ import { createVector } from "#/engine/Vector.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
 const idle: Sprite = await fromSrc(charIdle, 2, 4);
+const speed = 0.05;
 
 const { animate, process } = defineEntity("hero", {
 	animation: createAnimation(idle, 500, 2),
@@ -36,13 +37,13 @@ process((entity, delta) => {
 		entity.position.y = pointer.position.y;
 	}
 
-	entity.velocity.x -= keyboardInput.arrowLeft ? 0.1 : 0;
-	entity.velocity.x += keyboardInput.arrowRight ? 0.1 : 0;
-	entity.velocity.y -= keyboardInput.arrowUp ? 0.1 : 0;
-	entity.velocity.y += keyboardInput.arrowDown ? 0.1 : 0;
+	entity.velocity.x -= keyboardInput.arrowLeft ? speed : 0;
+	entity.velocity.x += keyboardInput.arrowRight ? speed : 0;
+	entity.velocity.y -= keyboardInput.arrowUp ? speed : 0;
+	entity.velocity.y += keyboardInput.arrowDown ? speed : 0;
 
-	entity.position.x += entity.velocity.x * delta;
-	entity.position.y += entity.velocity.y * delta;
+	entity.position.x = Math.round(entity.velocity.x * delta + entity.position.x);
+	entity.position.y = Math.round(entity.velocity.y * delta + entity.position.y);
 
 	entity.velocity.x = 0;
 	entity.velocity.y = 0;
