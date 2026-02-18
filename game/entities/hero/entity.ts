@@ -1,5 +1,5 @@
 import { createAnimation, playAnimation } from "#/engine/Animation.ts";
-import { createCircle, drawCircle } from "#/engine/Circle";
+import { createCircle } from "#/engine/Circle";
 import { moveAndCollide } from "#/engine/Collision.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
@@ -28,7 +28,6 @@ animate((entity, ctx, delta) => {
 		entity.position.y,
 		delta,
 	);
-	drawCircle(ctx, entity.body.shape, "red");
 });
 
 process((entity, delta) => {

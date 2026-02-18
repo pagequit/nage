@@ -1,4 +1,4 @@
-import { drawCircle } from "#/engine/Circle";
+import { strokeCircle } from "#/engine/Circle";
 import { pointer } from "#/engine/Pointer.ts";
 import { defineScene } from "#/engine/Scene.ts";
 import data from "./data.json";
@@ -17,7 +17,7 @@ preProcess((entityInstanceMap) => {
 
 process((ctx, delta) => {
 	if (!pointer.isDown) {
-		drawCircle(ctx, {
+		strokeCircle(ctx, {
 			position: pointer.position,
 			radius: 4,
 		});

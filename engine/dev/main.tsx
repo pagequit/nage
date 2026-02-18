@@ -18,6 +18,7 @@ import {
 	setScene,
 } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
+import { strokeRect } from "../Rect.ts";
 import { InputField } from "./controls/InputField.tsx";
 import { RangeSlider } from "./controls/RangeSlider.tsx";
 import { GraphBrowser } from "./GraphBrowser.tsx";
@@ -115,6 +116,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 			processProxy(...args);
 
 			ctx.save();
+			ctx.globalAlpha = 0.75;
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = "#6572f5";
 			viewport.ctx.strokeRect(
@@ -131,6 +133,8 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				2,
 				2,
 			);
+			ctx.beginPath();
+			ctx.fill();
 			ctx.restore();
 		};
 	};
