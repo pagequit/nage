@@ -1,27 +1,33 @@
 {
 	"name": "testScene",
-	"width": 80,
-	"height": 48,
+	"width": 240,
+	"height": 160,
 	"entities": [
 		{
 			"name": "hero",
-			"position": {
-				"x": 0,
-				"y": 0
+			"init": {
+				"position": {
+					"x": 0,
+					"y": 0
+				}
 			}
 		},
 		{
 			"name": "portal",
-			"position": {
-				"x": 16,
-				"y": 16
+			"init": {
+				"position": {
+					"x": 16,
+					"y": 16
+				}
 			}
 		},
 		{
 			"name": "testEntity",
-			"position": {
-				"x": 32,
-				"y": 32
+			"init": {
+				"position": {
+					"x": 32,
+					"y": 32
+				}
 			}
 		}
 	]

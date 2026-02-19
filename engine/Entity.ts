@@ -1,45 +1,20 @@
-import type { Animation } from "./Animation.ts";
-import { createVector, type Vector } from "./Vector.ts";
-
-export type Indirect = never;
-
-export type Entity<T> = {
+export type Entity<T extends object> = {
 	name: string;
-	position: Vector;
-	animation: Animation;
-} & T;
+	state: T;
+};
 
-export type Animate<T> = (
-	entity: Entity<T>,
-	ctx: CanvasRenderingContext2D,
-	delta: number,
-) => void;
+export type Process<T extends object> = (instance: T, delta: number) => void;
 
-export type Process<T> = (entity: Entity<T>, delta: number) => void;
+export const entityMap = new Map();
+export const entityProcessMap = new Map();
 
-export const entityMap = new Map<string, Entity<unknown>>();
-export const entityAnimateMap = new Map<string, Animate<Indirect>>();
-export const entityProcessMap = new Map<string, Process<Indirect>>();
-
-export function defineEntity<T extends { animation: Animation }>(
+export function defineEntity<T extends object>(
 	name: string,
 	state: T,
-): {
-	animate: (fn: Animate<T>) => void;
-	process: (fn: Process<T>) => void;
-} {
-	entityMap.set(name, {
-		name,
-		position: createVector(),
-		...state,
-	});
+): (fn: Process<T>) => void {
+	entityMap.set(name, state);
 
-	return {
-		animate(fn) {
-			entityAnimateMap.set(name, fn);
-		},
-		process(fn) {
-			entityProcessMap.set(name, fn);
-		},
+	return (fn) => {
+		entityProcessMap.set(name, fn);
 	};
 }

@@ -1,28 +1,29 @@
 import {
-	type Animate as AnimateEntity,
 	type Entity,
-	entityAnimateMap,
 	entityMap,
 	entityProcessMap,
-	type Indirect,
 	type Process as ProcessEntity,
-} from "./Entity.ts";
-import { type Graph, getNeighbours } from "./Graph.ts";
-import { useWithAsyncCache } from "./lib/cache.ts";
+} from "#/engine/Entity.ts";
+import { type Graph, getNeighbours } from "#/engine/Graph.ts";
+import { useWithAsyncCache } from "#/engine/lib/cache.ts";
+
+export type EntityData = {
+	name: string;
+	init: object;
+};
 
 export type SceneData = {
 	name: string;
 	width: number;
 	height: number;
-	entities: Array<Entity<unknown>>;
+	entities: Array<EntityData>;
 };
 
 export type EntityInstanceMap = Map<
 	string,
 	{
-		animate: AnimateEntity<Indirect>;
-		process: ProcessEntity<Indirect>;
-		instances: Array<Entity<unknown>>;
+		process: ProcessEntity<object>;
+		instances: Array<object>;
 	}
 >;
 
@@ -41,42 +42,43 @@ export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
 export const sceneProcessMap = new Map<string, Process>();
 export const scenePreProcessMap = new Map<string, PreProcess>();
 export const scenePostProcessMap = new Map<string, PostProcess>();
-export const sceneDataMap = new Map<string, SceneData>();
-export const sceneEntiyMap = new Map<string, EntityInstanceMap>();
+
 export const sceneChangedHandlers = new Set<SceneChangeHandler>();
+
+export const sceneDataMap = new Map<string, SceneData>();
+export const sceneEntiyInstanceMap = new Map<string, EntityInstanceMap>();
 export const sceneGraph: Graph<string> = new Map();
 
-const sceneInstancesMap = new Map<string, Array<Entity<unknown>>>();
+const sceneInstancesMap = new Map<string, Array<object>>();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
 		await import(`#/game/scenes/${name}/scene.ts`);
 
 		const data = sceneDataMap.get(name)!;
-		const entityInstanceMap = sceneEntiyMap.get(name)!;
+		const entityInstanceMap = sceneEntiyInstanceMap.get(name)!;
 		entityInstanceMap.clear();
 
 		await Promise.all(
-			data.entities.map(async (entity: Entity<unknown>) => {
-				await import(`#/game/entities/${entity.name}/entity.ts`);
+			data.entities.map(async (entityData: EntityData) => {
+				await import(`#/game/entities/${entityData.name}/entity.ts`);
 
-				if (!entityInstanceMap.has(entity.name)) {
-					entityInstanceMap.set(entity.name, {
-						animate: entityAnimateMap.get(entity.name) ?? (() => {}),
-						process: entityProcessMap.get(entity.name) ?? (() => {}),
+				if (!entityInstanceMap.has(entityData.name)) {
+					entityInstanceMap.set(entityData.name, {
+						process: entityProcessMap.get(entityData.name) ?? (() => {}),
 						instances: [],
 					});
 				}
 
 				try {
-					entityInstanceMap.get(entity.name)!.instances.push(
+					entityInstanceMap.get(entityData.name)!.instances.push(
 						structuredClone({
-							...entityMap.get(entity.name)!,
-							...entity,
+							...entityMap.get(entityData.name)!,
+							...entityData,
 						}),
 					);
 				} catch (error) {
-					console.error(entity.name, error);
+					console.error(entityData.name, error);
 				}
 			}),
 		);
@@ -94,21 +96,21 @@ export const currentScene: Scene = {
 	entityInstanceMap: new Map(),
 };
 
-function animateEntities(ctx: CanvasRenderingContext2D, delta: number): void {
-	const instances = sceneInstancesMap.get(currentScene.data.name)!;
-	instances.sort((a, b) => a.position.y - b.position.y);
+// function animateEntities(ctx: CanvasRenderingContext2D, delta: number): void {
+// 	const instances = sceneInstancesMap.get(currentScene.data.name)!;
+// 	instances.sort((a, b) => a.position.y - b.position.y);
 
-	for (const instance of instances) {
-		currentScene.entityInstanceMap
-			.get(instance.name)!
-			.animate(instance as Entity<Indirect>, ctx, delta);
-	}
-}
+// 	for (const instance of instances) {
+// 		currentScene.entityInstanceMap
+// 			.get(instance.name)!
+// 			.animate(instance as Entity<Indirect>, ctx, delta);
+// 	}
+// }
 
 function processEntities(delta: number): void {
 	for (const entity of currentScene.entityInstanceMap.values()) {
 		for (const instance of entity.instances) {
-			entity.process(instance as Entity<Indirect>, delta);
+			entity.process(instance, delta);
 		}
 	}
 }
@@ -130,7 +132,7 @@ export function defineScene(data: SceneData): {
 	postProcess: (fn: PostProcess) => void;
 } {
 	sceneDataMap.set(data.name, data);
-	sceneEntiyMap.set(data.name, new Map());
+	sceneEntiyInstanceMap.set(data.name, new Map());
 
 	return {
 		linkScenes(ids) {
@@ -146,7 +148,7 @@ export function defineScene(data: SceneData): {
 			sceneProcessMap.set(data.name, (ctx, delta) => {
 				processEntities(delta);
 				fn(ctx, delta);
-				animateEntities(ctx, delta);
+				// animateEntities(ctx, delta);
 			});
 		},
 		preProcess(fn): void {
@@ -168,7 +170,7 @@ export async function setScene(name: string): Promise<void> {
 
 	const data = sceneDataMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
-	const entityInstanceMap = sceneEntiyMap.get(name)!;
+	const entityInstanceMap = sceneEntiyInstanceMap.get(name)!;
 	sceneInstancesMap.set(
 		data.name,
 		entityInstanceMap.values().reduce(
@@ -178,18 +180,18 @@ export async function setScene(name: string): Promise<void> {
 				}
 				return acc;
 			},
-			[] as Array<Entity<unknown>>,
+			[] as Array<object>,
 		),
 	);
 
 	const preProcess = scenePreProcessMap.get(name);
 	if (preProcess) {
-		preProcess(sceneEntiyMap.get(name)!);
+		preProcess(sceneEntiyInstanceMap.get(name)!);
 	}
 
 	const postProcess = scenePostProcessMap.get(currentScene.data.name);
 	if (postProcess) {
-		postProcess(sceneEntiyMap.get(name)!);
+		postProcess(sceneEntiyInstanceMap.get(name)!);
 	}
 
 	currentScene.data = data;

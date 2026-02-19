@@ -5,16 +5,20 @@
 	"entities": [
 		{
 			"name": "hero",
-			"position": {
-				"x": 0,
-				"y": 0
+			"init": {
+				"position": {
+					"x": 0,
+					"y": 0
+				}
 			}
 		},
 		{
 			"name": "testEntity",
-			"position": {
-				"x": 24,
-				"y": 16
+			"init": {
+				"position": {
+					"x": 24,
+					"y": 16
+				}
 			}
 		}
 	]

@@ -7,18 +7,15 @@ import {
 	Show,
 } from "solid-js";
 import { render } from "solid-js/web";
-import { spriteMap } from "#/engine/Animation.ts";
 import type { Entity } from "#/engine/Entity.ts";
 import {
 	currentScene,
 	type SceneData,
 	sceneChangedHandlers,
 	sceneGraph,
-	sceneProcessMap,
 	setScene,
 } from "#/engine/Scene.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
-import { strokeRect } from "../Rect.ts";
 import { InputField } from "./controls/InputField.tsx";
 import { RangeSlider } from "./controls/RangeSlider.tsx";
 import { GraphBrowser } from "./GraphBrowser.tsx";
@@ -76,7 +73,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
-	const [activeEntity, setActiveEntity] = createSignal<null | Entity<unknown>>(
+	const [activeEntity, setActiveEntity] = createSignal<null | Entity<object>>(
 		null,
 	);
 
@@ -96,47 +93,48 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	});
 
 	const selectEntity = (items: ItemsRef): void => {
-		const activeRef = items.find((ref) => ref.item.isActive)!;
-		const instances = currentScene.entityInstanceMap.get(
-			activeRef.item.label,
-		)!.instances;
+		console.log(items);
+		// const activeRef = items.find((ref) => ref.item.isActive)!;
+		// const instances = currentScene.entityInstanceMap.get(
+		// 	activeRef.item.label,
+		// )!.instances;
 
-		const entityRefs = items.filter(
-			(ref) => ref.item.label === activeRef.item.label,
-		);
-		const instance =
-			instances[entityRefs.findIndex((ref) => ref.item.isActive)];
+		// const entityRefs = items.filter(
+		// 	(ref) => ref.item.label === activeRef.item.label,
+		// );
+		// const instance =
+		// 	instances[entityRefs.findIndex((ref) => ref.item.isActive)];
 
-		setActiveEntity(instance);
-		const sprite = spriteMap.get(instance.animation.spriteSrc)!;
+		// setActiveEntity(instance);
+		// const sprite = spritesSheetsMap.get(instance.animation.spriteSrc)!;
 
-		const processProxy = sceneProcessMap.get(currentScene.data.name)!;
-		const ctx = viewport.ctx;
-		currentScene.process = (...args) => {
-			processProxy(...args);
+		// const processProxy = sceneProcessMap.get(currentScene.data.name)!;
+		// const ctx = viewport.ctx;
+		// currentScene.process = (...args) => {
+		// 	processProxy(...args);
 
-			ctx.save();
-			ctx.globalAlpha = 0.75;
-			ctx.lineWidth = 1;
-			ctx.strokeStyle = "#6572f5";
-			viewport.ctx.strokeRect(
-				instance.position.x - 0.5,
-				instance.position.y - 0.5,
-				sprite.image.width / sprite.xFrames + 1,
-				sprite.image.height / sprite.yFrames + 1,
-			);
+		// 	ctx.save();
+		// 	ctx.globalAlpha = 0.75;
+		// 	ctx.lineWidth = 1;
+		// 	ctx.strokeStyle = "#6572f5";
+		// 	viewport.ctx.strokeRect(
+		// 		instance.position.x - 0.5,
+		// 		instance.position.y - 0.5,
+		// 		sprite.sheet.width / sprite.xFrames + 1,
+		// 		sprite.sheet.height / sprite.yFrames + 1,
+		// 	);
 
-			ctx.fillStyle = "#ee459e";
-			viewport.ctx.fillRect(
-				instance.position.x - 1,
-				instance.position.y - 1,
-				2,
-				2,
-			);
-			ctx.beginPath();
-			ctx.fill();
-			ctx.restore();
-		};
+		// 	ctx.fillStyle = "#ee459e";
+		// 	viewport.ctx.fillRect(
+		// 		instance.position.x - 1,
+		// 		instance.position.y - 1,
+		// 		2,
+		// 		2,
+		// 	);
+		// 	ctx.beginPath();
+		// 	ctx.fill();
+		// 	ctx.restore();
+		// };
 	};
 
 	onMount(() => {
@@ -205,19 +203,19 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 						<InputField
 							type="number"
 							name="x"
-							value={String(activeEntity()!.position.x)}
+							value={"FIXME"}
 							icon={LetterXIcon()}
 							onChange={(value) => {
-								activeEntity()!.position.x = parseInt(value);
+								// activeEntity()!.position.x = parseInt(value);
 							}}
 						></InputField>
 						<InputField
 							type="number"
 							name="y"
-							value={String(activeEntity()!.position.y)}
+							value={"FIXME"}
 							icon={LetterYIcon()}
 							onChange={(value) => {
-								activeEntity()!.position.y = parseInt(value);
+								// activeEntity()!.position.y = parseInt(value);
 							}}
 						></InputField>
 					</div>

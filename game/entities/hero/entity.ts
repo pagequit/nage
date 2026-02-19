@@ -1,34 +1,35 @@
-import { createAnimation, playAnimation } from "#/engine/Animation.ts";
-import { createCircle } from "#/engine/Circle";
+import { type Circle, createCircle } from "#/engine/Circle.ts";
 import { moveAndCollide } from "#/engine/Collision.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
+import { loadImage } from "#/engine/lib/loadImage";
 import { pointer } from "#/engine/Pointer.ts";
-import { fromSrc, type Sprite } from "#/engine/Sprite.ts";
-import { createVector } from "#/engine/Vector.ts";
+import {
+	createSpriteAnimation,
+	createSpritesSheet,
+	type SpriteAnimation,
+} from "#/engine/sprites.ts";
+import { createVector, type Vector } from "#/engine/Vector.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
-const idle: Sprite = await fromSrc(charIdle, 2, 4);
+export type Hero = {
+	position: Vector;
+	velocity: Vector;
+	body: Circle;
+	animation: SpriteAnimation;
+};
+
 const speed = 0.05;
+const idleSheet = createSpritesSheet(await loadImage(charIdle), 2, 4);
 
-const { animate, process } = defineEntity("hero", {
-	animation: createAnimation(idle, 500, 2),
+const state: Hero = {
+	position: createVector(),
 	velocity: createVector(),
-	body: {
-		shape: createCircle(createVector(), 4),
-		offset: createVector(8, 10),
-	},
-});
+	body: createCircle(createVector(), 4),
+	animation: createSpriteAnimation(idleSheet, 500, 2),
+};
 
-animate((entity, ctx, delta) => {
-	playAnimation(
-		ctx,
-		entity.animation,
-		entity.position.x,
-		entity.position.y,
-		delta,
-	);
-});
+const process = defineEntity("hero", state);
 
 process((entity, delta) => {
 	if (pointer.isDown) {
@@ -49,6 +50,6 @@ process((entity, delta) => {
 
 	moveAndCollide(entity.body, entity.velocity);
 
-	entity.body.shape.position.x = entity.body.offset.x + entity.position.x;
-	entity.body.shape.position.y = entity.body.offset.y + entity.position.y;
+	// entity.body.position.x = entity.body.offset.x + entity.position.x;
+	// entity.body.position.y = entity.body.offset.y + entity.position.y;
 });

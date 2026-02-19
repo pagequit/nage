@@ -1,49 +1,41 @@
-import {
-	type Animation,
-	createAnimation,
-	playAnimation,
-} from "#/engine/Animation.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { loadImage } from "#/engine/lib/loadImage.ts";
-import { createSprite } from "#/engine/Sprite.ts";
+import {
+	createSpriteAnimation,
+	createSpritesSheet,
+	type SpriteAnimation,
+} from "#/engine/sprites.ts";
+import { createVector, type Vector } from "#/engine/Vector.ts";
 import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 import charWalk from "#/game/assets/char-walk.png";
 
 const sprites = {
-	idle: createSprite(await loadImage(charIdle), 2, 4),
-	walk: createSprite(await loadImage(charWalk), 4, 4),
+	idle: createSpritesSheet(await loadImage(charIdle), 2, 4),
+	walk: createSpritesSheet(await loadImage(charWalk), 4, 4),
 };
 
 const animations = {
-	idle: createAnimation(sprites.idle, 500, 2),
-	walk: createAnimation(sprites.walk, 250, 2),
+	idle: createSpriteAnimation(sprites.idle, 500, 2),
+	walk: createSpriteAnimation(sprites.walk, 250, 2),
 };
 
-const { animate, process } = defineEntity<{
-	animation: Animation;
+const process = defineEntity<{
+	position: Vector;
+	animation: SpriteAnimation;
 	animations: {
-		idle: Animation;
-		walk: Animation;
+		idle: SpriteAnimation;
+		walk: SpriteAnimation;
 	};
 	stuff: number;
 }>("testEntity", {
+	position: createVector(),
 	animations,
 	animation: animations.idle,
 	stuff: 1,
 });
 
-animate((entity, ctx, delta) => {
-	playAnimation(
-		ctx,
-		entity.animation,
-		entity.position.x,
-		entity.position.y,
-		delta,
-	);
-});
-
-process((entity, delta) => {
+process((entity, _delta) => {
 	entity.position.x += entity.stuff * 0.5;
 	if (entity.position.x > viewport.canvas.width - 16) {
 		entity.stuff = -1;

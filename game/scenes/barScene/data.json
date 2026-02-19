@@ -5,9 +5,11 @@
 	"entities": [
 		{
 			"name": "hero",
-			"position": {
-				"x": 0,
-				"y": 0
+			"init": {
+				"position": {
+					"x": 0,
+					"y": 0
+				}
 			}
 		}
 	]
