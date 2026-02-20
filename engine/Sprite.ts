@@ -1,4 +1,6 @@
-export type SpritesSheet = {
+import { loadImage } from "./lib/loadImage";
+
+export type SpriteSheet = {
 	image: HTMLImageElement;
 	xFrames: number;
 	yFrames: number;
@@ -7,18 +9,23 @@ export type SpritesSheet = {
 };
 
 export type SpriteAnimation = {
-	sheet: SpritesSheet;
+	src: string;
 	xIndex: number;
 	yIndex: number;
 	frameTime: number;
 	frameDelta: number;
 };
 
-export function createSpritesSheet(
+// It's not possible to crate a structured clone of a HTMLImageElement and it would be a
+// waste of memory anyways since we use the HTMLImageElement only as reference for draw calls.
+// Therefore the SpriteSheet will stored by it's image source.
+export const spriteSheetMap = new Map<string, SpriteSheet>();
+
+export function createSpriteSheet(
 	image: HTMLImageElement,
 	xFrames: number,
 	yFrames: number,
-): SpritesSheet {
+): SpriteSheet {
 	return {
 		image,
 		xFrames,
@@ -28,13 +35,26 @@ export function createSpritesSheet(
 	};
 }
 
+export async function useSpriteSheetSrc(
+	src: string,
+	xFrames: number,
+	yFrames: number,
+): Promise<string> {
+	spriteSheetMap.set(
+		src,
+		createSpriteSheet(await loadImage(src), xFrames, yFrames),
+	);
+
+	return src;
+}
+
 export function createSpriteAnimation(
-	sheet: SpritesSheet,
+	src: string,
 	frameTime: number,
 	yIndex: number,
 ): SpriteAnimation {
 	return {
-		sheet,
+		src,
 		xIndex: 0,
 		yIndex,
 		frameTime,
@@ -44,7 +64,7 @@ export function createSpriteAnimation(
 
 export function drawSprite(
 	ctx: CanvasRenderingContext2D,
-	sheet: SpritesSheet,
+	sheet: SpriteSheet,
 	xIndex: number,
 	yIndex: number,
 	x: number,
@@ -72,12 +92,14 @@ export function playAnimation(
 	y: number,
 	delta: number,
 ): void {
+	const sheet = spriteSheetMap.get(animation.src)!;
+
 	if ((animation.frameDelta += delta) > animation.frameTime) {
 		animation.frameDelta = 0;
-		if ((animation.xIndex += 1) >= animation.sheet.xFrames) {
+		if ((animation.xIndex += 1) >= sheet.xFrames) {
 			animation.xIndex = 0;
 		}
 	}
 
-	drawSprite(ctx, animation.sheet, animation.xIndex, animation.yIndex, x, y);
+	drawSprite(ctx, sheet, animation.xIndex, animation.yIndex, x, y);
 }

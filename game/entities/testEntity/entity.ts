@@ -1,18 +1,17 @@
 import { defineEntity } from "#/engine/Entity.ts";
-import { loadImage } from "#/engine/lib/loadImage.ts";
 import {
 	createSpriteAnimation,
-	createSpritesSheet,
 	type SpriteAnimation,
-} from "#/engine/sprites.ts";
+	useSpriteSheetSrc,
+} from "#/engine/Sprite.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 import charWalk from "#/game/assets/char-walk.png";
 
 const sprites = {
-	idle: createSpritesSheet(await loadImage(charIdle), 2, 4),
-	walk: createSpritesSheet(await loadImage(charWalk), 4, 4),
+	idle: await useSpriteSheetSrc(charIdle, 2, 4),
+	walk: await useSpriteSheetSrc(charWalk, 4, 4),
 };
 
 const animations = {

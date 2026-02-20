@@ -2,13 +2,12 @@ import { type Circle, createCircle } from "#/engine/Circle.ts";
 import { moveAndCollide } from "#/engine/Collision.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
-import { loadImage } from "#/engine/lib/loadImage";
 import { pointer } from "#/engine/Pointer.ts";
 import {
 	createSpriteAnimation,
-	createSpritesSheet,
 	type SpriteAnimation,
-} from "#/engine/sprites.ts";
+	useSpriteSheetSrc,
+} from "#/engine/Sprite.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
@@ -20,7 +19,7 @@ export type Hero = {
 };
 
 const speed = 0.05;
-const idleSheet = createSpritesSheet(await loadImage(charIdle), 2, 4);
+const idleSheet = await useSpriteSheetSrc(charIdle, 2, 4);
 
 const state: Hero = {
 	position: createVector(),

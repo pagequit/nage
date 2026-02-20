@@ -1,5 +1,4 @@
 import {
-	type Entity,
 	entityMap,
 	entityProcessMap,
 	type Process as ProcessEntity,
