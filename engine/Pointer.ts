@@ -63,13 +63,14 @@ function adjustPointerPosition(
 
 export function listenPointer(): () => void {
 	const canvas = viewport.ctx.canvas;
+	const options = { passive: true };
 
-	canvas.addEventListener("mousedown", onMouseDown);
-	canvas.addEventListener("touchstart", onTouchStart);
-	canvas.addEventListener("mousemove", onMouseMove);
-	canvas.addEventListener("touchmove", onTouchMove);
-	canvas.addEventListener("mouseup", onMouseUp);
-	canvas.addEventListener("touchend", onTouchEnd);
+	canvas.addEventListener("mousedown", onMouseDown, options);
+	canvas.addEventListener("touchstart", onTouchStart, options);
+	canvas.addEventListener("mousemove", onMouseMove, options);
+	canvas.addEventListener("touchmove", onTouchMove, options);
+	canvas.addEventListener("mouseup", onMouseUp, options);
+	canvas.addEventListener("touchend", onTouchEnd, options);
 	canvas.addEventListener("contextmenu", onContextMenu);
 
 	return () => {

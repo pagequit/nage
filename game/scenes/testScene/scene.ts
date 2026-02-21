@@ -1,7 +1,8 @@
-import { strokeCircle } from "#/engine/Circle.ts";
+import { createCircle, strokeCircle } from "#/engine/Circle.ts";
 import { pointer } from "#/engine/Pointer.ts";
 import { defineScene } from "#/engine/Scene.ts";
 import { spriteSheetMap } from "#/engine/Sprite.ts";
+import { createVector } from "#/engine/Vector";
 import type { Hero } from "#/game/entities/hero/entity.ts";
 import data from "./data.json";
 
@@ -18,11 +19,11 @@ preProcess((entityInstanceMap) => {
 	instance.position.y = data.height - sheet.frameWidth;
 });
 
+const cirle = createCircle(createVector(), 4);
 process((ctx, _delta) => {
 	if (!pointer.isDown) {
-		strokeCircle(ctx, {
-			position: pointer.position,
-			radius: 4,
-		});
+		cirle.position.x = pointer.position.x;
+		cirle.position.y = pointer.position.y;
+		strokeCircle(ctx, cirle);
 	}
 });

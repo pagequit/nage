@@ -18,7 +18,7 @@ export type SceneData = {
 	entities: Array<EntityData>;
 };
 
-export type EntityInstanceMap = Map<
+export type EntityMap = Map<
 	string,
 	{
 		process: ProcessEntity<object>;
@@ -28,13 +28,13 @@ export type EntityInstanceMap = Map<
 
 export type Scene = {
 	data: SceneData;
-	entityInstanceMap: EntityInstanceMap;
+	entityMap: EntityMap;
 	process: Process;
 };
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
-export type PreProcess = (entityInstanceMap: EntityInstanceMap) => void;
-export type PostProcess = (entityInstanceMap: EntityInstanceMap) => void;
+export type PreProcess = (entityMap: EntityMap) => void;
+export type PostProcess = (entityMap: EntityMap) => void;
 
 export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
 
@@ -45,7 +45,7 @@ export const scenePostProcessMap = new Map<string, PostProcess>();
 export const sceneChangedHandlers = new Set<SceneChangeHandler>();
 
 export const sceneDataMap = new Map<string, SceneData>();
-export const sceneEntiyInstanceMap = new Map<string, EntityInstanceMap>();
+export const sceneEntiyMap = new Map<string, EntityMap>();
 export const sceneGraph: Graph<string> = new Map();
 
 const sceneInstancesMap = new Map<string, Array<object>>();
@@ -55,7 +55,7 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 		await import(`#/game/scenes/${name}/scene.ts`);
 
 		const data = sceneDataMap.get(name)!;
-		const entityInstanceMap = sceneEntiyInstanceMap.get(name)!;
+		const entityInstanceMap = sceneEntiyMap.get(name)!;
 		entityInstanceMap.clear();
 
 		await Promise.all(
@@ -92,24 +92,13 @@ export const currentScene: Scene = {
 		entities: [],
 	},
 	process: () => {},
-	entityInstanceMap: new Map(),
+	entityMap: new Map(),
 };
 
-// function animateEntities(ctx: CanvasRenderingContext2D, delta: number): void {
-// 	const instances = sceneInstancesMap.get(currentScene.data.name)!;
-// 	instances.sort((a, b) => a.position.y - b.position.y);
-
-// 	for (const instance of instances) {
-// 		currentScene.entityInstanceMap
-// 			.get(instance.name)!
-// 			.animate(instance as Entity<Indirect>, ctx, delta);
-// 	}
-// }
-
 function processEntities(delta: number): void {
-	for (const entity of currentScene.entityInstanceMap.values()) {
-		for (const instance of entity.instances) {
-			entity.process(instance, delta);
+	for (const entry of currentScene.entityMap.values()) {
+		for (const instance of entry.instances) {
+			entry.process(instance, delta);
 		}
 	}
 }
@@ -131,7 +120,7 @@ export function defineScene(data: SceneData): {
 	postProcess: (fn: PostProcess) => void;
 } {
 	sceneDataMap.set(data.name, data);
-	sceneEntiyInstanceMap.set(data.name, new Map());
+	sceneEntiyMap.set(data.name, new Map());
 
 	return {
 		linkScenes(ids) {
@@ -145,15 +134,14 @@ export function defineScene(data: SceneData): {
 		},
 		process(fn) {
 			sceneProcessMap.set(data.name, (ctx, delta) => {
-				processEntities(delta);
 				fn(ctx, delta);
-				// animateEntities(ctx, delta);
+				processEntities(delta);
 			});
 		},
-		preProcess(fn): void {
+		preProcess(fn) {
 			scenePreProcessMap.set(data.name, fn);
 		},
-		postProcess(fn): void {
+		postProcess(fn) {
 			scenePostProcessMap.set(data.name, fn);
 		},
 	};
@@ -169,7 +157,7 @@ export async function setScene(name: string): Promise<void> {
 
 	const data = sceneDataMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
-	const entityInstanceMap = sceneEntiyInstanceMap.get(name)!;
+	const entityInstanceMap = sceneEntiyMap.get(name)!;
 	sceneInstancesMap.set(
 		data.name,
 		entityInstanceMap.values().reduce(
@@ -185,12 +173,12 @@ export async function setScene(name: string): Promise<void> {
 
 	const preProcess = scenePreProcessMap.get(name);
 	if (preProcess) {
-		preProcess(sceneEntiyInstanceMap.get(name)!);
+		preProcess(sceneEntiyMap.get(name)!);
 	}
 
 	const postProcess = scenePostProcessMap.get(currentScene.data.name);
 	if (postProcess) {
-		postProcess(sceneEntiyInstanceMap.get(name)!);
+		postProcess(sceneEntiyMap.get(name)!);
 	}
 
 	currentScene.data = data;
@@ -198,7 +186,7 @@ export async function setScene(name: string): Promise<void> {
 
 	currentScene.process = process;
 
-	currentScene.entityInstanceMap = entityInstanceMap;
+	currentScene.entityMap = entityInstanceMap;
 
 	for (const handler of sceneChangedHandlers.values()) {
 		handler(data, currentScene.data);
