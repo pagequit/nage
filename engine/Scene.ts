@@ -5,6 +5,7 @@ import {
 } from "#/engine/Entity.ts";
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
+import { playAnimation } from "./Sprite";
 
 export type EntityData = {
 	name: string;
@@ -48,7 +49,7 @@ export const sceneDataMap = new Map<string, SceneData>();
 export const sceneEntiyMap = new Map<string, EntityMap>();
 export const sceneGraph: Graph<string> = new Map();
 
-const sceneInstancesMap = new Map<string, Array<object>>();
+const sceneInstancesDrawMap = new Map<string, Array<object>>();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
@@ -103,6 +104,22 @@ function processEntities(delta: number): void {
 	}
 }
 
+// TODO: type stuff and fixme WIP
+function processSystems(ctx: CanvasRenderingContext2D, delta: number): void {
+	const drawables = sceneInstancesDrawMap.get(currentScene.data.name)!;
+	for (const drawable of drawables.sort(
+		(a, b) => b.position.y - a.position.y,
+	)) {
+		playAnimation(
+			ctx,
+			drawable.animation,
+			drawable.position.x,
+			drawable.position.y,
+			delta,
+		);
+	}
+}
+
 function linkScenes(a: string, b: string): void {
 	if (sceneGraph.has(a)) {
 		sceneGraph.get(a)!.push(b);
@@ -136,6 +153,7 @@ export function defineScene(data: SceneData): {
 			sceneProcessMap.set(data.name, (ctx, delta) => {
 				fn(ctx, delta);
 				processEntities(delta);
+				processSystems(ctx, delta);
 			});
 		},
 		preProcess(fn) {
@@ -158,7 +176,8 @@ export async function setScene(name: string): Promise<void> {
 	const data = sceneDataMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
 	const entityInstanceMap = sceneEntiyMap.get(name)!;
-	sceneInstancesMap.set(
+	// TODO: test for drawable first
+	sceneInstancesDrawMap.set(
 		data.name,
 		entityInstanceMap.values().reduce(
 			(acc, cur) => {
