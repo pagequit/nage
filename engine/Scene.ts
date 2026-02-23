@@ -108,7 +108,7 @@ function processEntities(delta: number): void {
 function processSystems(ctx: CanvasRenderingContext2D, delta: number): void {
 	const drawables = sceneInstancesDrawMap.get(currentScene.data.name)!;
 	for (const drawable of drawables.sort(
-		(a, b) => b.position.y - a.position.y,
+		(a, b) => a.position.y - b.position.y,
 	)) {
 		playAnimation(
 			ctx,
