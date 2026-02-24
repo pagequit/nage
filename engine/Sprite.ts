@@ -1,4 +1,12 @@
-import { loadImage } from "./lib/loadImage";
+import { loadImage } from "#/engine/lib/loadImage.ts";
+
+export type Sprite = {
+	src: string;
+	xStart: number;
+	yStart: number;
+	width: number;
+	height: number;
+};
 
 export type SpriteSheet = {
 	image: HTMLImageElement;
@@ -9,7 +17,7 @@ export type SpriteSheet = {
 };
 
 export type SpriteAnimation = {
-	src: string;
+	sprite: Sprite;
 	xIndex: number;
 	yIndex: number;
 	frameTime: number;
@@ -49,12 +57,14 @@ export async function useSpriteSheetSrc(
 }
 
 export function createSpriteAnimation(
-	src: string,
+	sprite: Sprite,
 	frameTime: number,
 	yIndex: number,
 ): SpriteAnimation {
+	sprite.yStart = yIndex * spriteSheetMap.get(sprite.src)!.frameHeight;
+
 	return {
-		src,
+		sprite,
 		xIndex: 0,
 		yIndex,
 		frameTime,
@@ -65,8 +75,8 @@ export function createSpriteAnimation(
 export function drawSprite(
 	ctx: CanvasRenderingContext2D,
 	sheet: SpriteSheet,
-	xIndex: number,
-	yIndex: number,
+	xStart: number,
+	yStart: number,
 	x: number,
 	y: number,
 	width?: number,
@@ -74,8 +84,8 @@ export function drawSprite(
 ): void {
 	ctx.drawImage(
 		sheet.image,
-		xIndex * sheet.frameWidth,
-		yIndex * sheet.frameHeight,
+		xStart,
+		yStart,
 		sheet.frameWidth,
 		sheet.frameHeight,
 		x,
@@ -85,15 +95,8 @@ export function drawSprite(
 	);
 }
 
-export function playAnimation(
-	ctx: CanvasRenderingContext2D,
-	animation: SpriteAnimation,
-	x: number,
-	y: number,
-	delta: number,
-): void {
-	const sheet = spriteSheetMap.get(animation.src)!;
-
+export function animateSprite(animation: SpriteAnimation, delta: number): void {
+	const sheet = spriteSheetMap.get(animation.sprite.src)!;
 	if ((animation.frameDelta += delta) > animation.frameTime) {
 		animation.frameDelta = 0;
 		if ((animation.xIndex += 1) >= sheet.xFrames) {
@@ -101,5 +104,5 @@ export function playAnimation(
 		}
 	}
 
-	drawSprite(ctx, sheet, animation.xIndex, animation.yIndex, x, y);
+	animation.sprite.xStart = animation.xIndex * sheet.frameWidth;
 }

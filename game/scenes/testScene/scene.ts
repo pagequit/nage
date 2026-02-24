@@ -3,7 +3,6 @@ import { pointer } from "#/engine/Pointer.ts";
 import { defineScene } from "#/engine/Scene.ts";
 import { spriteSheetMap } from "#/engine/Sprite.ts";
 import { createVector } from "#/engine/Vector";
-import type { Hero } from "#/game/entities/hero/entity.ts";
 import data from "./data.json";
 
 const { process, preProcess, linkScenes } = defineScene(data);
@@ -12,11 +11,11 @@ linkScenes(["fooScene"] as const);
 
 preProcess((entityInstanceMap) => {
 	const entry = entityInstanceMap.get("hero")!;
-	const instance = entry.instances[0] as Hero;
-	const sheet = spriteSheetMap.get(instance.animation.src)!;
+	const instance = entry.instances[0];
+	// const sheet = spriteSheetMap.get(instance.animation.src)!;
 
-	instance.position.x = data.width - sheet.frameHeight;
-	instance.position.y = data.height - sheet.frameWidth;
+	instance.position.x = data.width - 16;
+	instance.position.y = data.height - 16;
 });
 
 const cirle = createCircle(createVector(), 4);

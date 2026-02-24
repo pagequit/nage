@@ -5,6 +5,7 @@ import { keyboardInput } from "#/engine/Keyboard.ts";
 import { pointer } from "#/engine/Pointer.ts";
 import {
 	createSpriteAnimation,
+	type Sprite,
 	type SpriteAnimation,
 	useSpriteSheetSrc,
 } from "#/engine/Sprite.ts";
@@ -15,17 +16,26 @@ export type Hero = {
 	position: Vector;
 	velocity: Vector;
 	body: Circle;
+	sprite: Sprite;
 	animation: SpriteAnimation;
 };
 
 const speed = 0.05;
 const idleSheet = await useSpriteSheetSrc(charIdle, 2, 4);
+const sprite = {
+	src: idleSheet,
+	xStart: 0,
+	yStart: 0,
+	width: 16,
+	height: 16,
+};
 
 const state: Hero = {
 	position: createVector(),
 	velocity: createVector(),
 	body: createCircle(createVector(), 4),
-	animation: createSpriteAnimation(idleSheet, 500, 2),
+	sprite,
+	animation: createSpriteAnimation(sprite, 500, 2),
 };
 
 const process = defineEntity("hero", state);

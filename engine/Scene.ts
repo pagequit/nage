@@ -1,3 +1,4 @@
+import { type Drawable, draw, isDrawable } from "#/engine/Drawable.ts";
 import {
 	entityMap,
 	entityProcessMap,
@@ -5,7 +6,7 @@ import {
 } from "#/engine/Entity.ts";
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
-import { playAnimation } from "./Sprite";
+import { animateSprite, type SpriteAnimation } from "#/engine/Sprite.ts";
 
 export type EntityData = {
 	name: string;
@@ -22,10 +23,12 @@ export type SceneData = {
 export type EntityMap = Map<
 	string,
 	{
-		process: ProcessEntity<object>;
-		instances: Array<object>;
+		process: ProcessEntity<{ id: number }>;
+		instances: Array<{ id: number }>;
 	}
 >;
+
+export type AnimationMap = Map<number, SpriteAnimation>;
 
 export type Scene = {
 	data: SceneData;
@@ -49,7 +52,11 @@ export const sceneDataMap = new Map<string, SceneData>();
 export const sceneEntiyMap = new Map<string, EntityMap>();
 export const sceneGraph: Graph<string> = new Map();
 
-const sceneInstancesDrawMap = new Map<string, Array<object>>();
+const sceneInstancesDrawMap = new Map<
+	string,
+	Array<Drawable & { id: number }>
+>();
+const sceneInstancesAnimationMap = new Map<string, AnimationMap>();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
@@ -60,7 +67,7 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 		entityInstanceMap.clear();
 
 		await Promise.all(
-			data.entities.map(async (entityData: EntityData) => {
+			data.entities.map(async (entityData: EntityData, index: number) => {
 				await import(`#/game/entities/${entityData.name}/entity.ts`);
 
 				if (!entityInstanceMap.has(entityData.name)) {
@@ -75,6 +82,7 @@ export const [loadScene, sceneCache] = useWithAsyncCache(
 						structuredClone({
 							...entityMap.get(entityData.name)!,
 							...entityData,
+							id: index,
 						}),
 					);
 				} catch (error) {
@@ -104,19 +112,17 @@ function processEntities(delta: number): void {
 	}
 }
 
-// TODO: type stuff and fixme WIP
 function processSystems(ctx: CanvasRenderingContext2D, delta: number): void {
 	const drawables = sceneInstancesDrawMap.get(currentScene.data.name)!;
+	const animationsMap = sceneInstancesAnimationMap.get(currentScene.data.name)!;
+
 	for (const drawable of drawables.sort(
 		(a, b) => a.position.y - b.position.y,
 	)) {
-		playAnimation(
-			ctx,
-			drawable.animation,
-			drawable.position.x,
-			drawable.position.y,
-			delta,
-		);
+		if (animationsMap.has(drawable.id)) {
+			animateSprite(animationsMap.get(drawable.id)!, delta);
+		}
+		draw(ctx, drawable);
 	}
 }
 
@@ -176,19 +182,29 @@ export async function setScene(name: string): Promise<void> {
 	const data = sceneDataMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
 	const entityInstanceMap = sceneEntiyMap.get(name)!;
-	// TODO: test for drawable first
-	sceneInstancesDrawMap.set(
-		data.name,
-		entityInstanceMap.values().reduce(
-			(acc, cur) => {
-				for (const instance of cur.instances) {
-					acc.push(instance);
-				}
-				return acc;
-			},
-			[] as Array<object>,
-		),
-	);
+
+	const drawableInstances: Array<Drawable & { id: number }> = [];
+	sceneInstancesDrawMap.set(data.name, drawableInstances);
+
+	const animateInstances: AnimationMap = new Map();
+	sceneInstancesAnimationMap.set(data.name, animateInstances);
+
+	for (const entity of entityInstanceMap.values()) {
+		for (const instance of entity.instances) {
+			if (isDrawable(instance)) {
+				drawableInstances.push(instance);
+			}
+			if (
+				(instance as { id: number; animation: SpriteAnimation }).animation !==
+				undefined
+			) {
+				animateInstances.set(
+					instance.id,
+					(instance as { id: number; animation: SpriteAnimation }).animation, // FIXME
+				);
+			}
+		}
+	}
 
 	const preProcess = scenePreProcessMap.get(name);
 	if (preProcess) {

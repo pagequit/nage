@@ -1,6 +1,7 @@
 import { defineEntity } from "#/engine/Entity.ts";
 import {
 	createSpriteAnimation,
+	type Sprite,
 	type SpriteAnimation,
 	useSpriteSheetSrc,
 } from "#/engine/Sprite.ts";
@@ -9,9 +10,26 @@ import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 import charWalk from "#/game/assets/char-walk.png";
 
-const sprites = {
+const sheets = {
 	idle: await useSpriteSheetSrc(charIdle, 2, 4),
 	walk: await useSpriteSheetSrc(charWalk, 4, 4),
+};
+
+const sprites = {
+	idle: {
+		src: sheets.idle,
+		xStart: 0,
+		yStart: 0,
+		width: 16,
+		height: 16,
+	},
+	walk: {
+		src: sheets.walk,
+		xStart: 0,
+		yStart: 0,
+		width: 16,
+		height: 16,
+	},
 };
 
 const animations = {
@@ -26,11 +44,18 @@ const process = defineEntity<{
 		idle: SpriteAnimation;
 		walk: SpriteAnimation;
 	};
+	sprite: Sprite;
+	sprites: {
+		idle: Sprite;
+		walk: Sprite;
+	};
 	stuff: number;
 }>("testEntity", {
 	position: createVector(),
-	animations,
 	animation: animations.idle,
+	animations,
+	sprite: sprites.idle,
+	sprites,
 	stuff: 1,
 });
 
@@ -39,8 +64,10 @@ process((entity, _delta) => {
 	if (entity.position.x > viewport.canvas.width - 16) {
 		entity.stuff = -1;
 		entity.animation = entity.animations.walk;
+		entity.sprite = entity.sprites.walk;
 	} else if (entity.position.x < 0) {
 		entity.stuff = 1;
 		entity.animation = entity.animations.idle;
+		entity.sprite = entity.sprites.idle;
 	}
 });
