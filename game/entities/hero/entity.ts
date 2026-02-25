@@ -17,7 +17,7 @@ export type Hero = {
 	velocity: Vector;
 	body: Circle;
 	sprite: Sprite;
-	animation: SpriteAnimation;
+	$animation: { value: SpriteAnimation };
 };
 
 const speed = 0.05;
@@ -35,7 +35,7 @@ const state: Hero = {
 	velocity: createVector(),
 	body: createCircle(createVector(), 4),
 	sprite,
-	animation: createSpriteAnimation(sprite, 500, 2),
+	$animation: { value: createSpriteAnimation(sprite, 500, 2) },
 };
 
 const process = defineEntity("hero", state);

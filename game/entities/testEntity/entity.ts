@@ -39,7 +39,7 @@ const animations = {
 
 const process = defineEntity<{
 	position: Vector;
-	animation: SpriteAnimation;
+	$animation: { value: SpriteAnimation };
 	animations: {
 		idle: SpriteAnimation;
 		walk: SpriteAnimation;
@@ -52,7 +52,7 @@ const process = defineEntity<{
 	stuff: number;
 }>("testEntity", {
 	position: createVector(),
-	animation: animations.idle,
+	$animation: { value: animations.idle },
 	animations,
 	sprite: sprites.idle,
 	sprites,
@@ -63,11 +63,11 @@ process((entity, _delta) => {
 	entity.position.x += entity.stuff * 0.5;
 	if (entity.position.x > viewport.canvas.width - 16) {
 		entity.stuff = -1;
-		entity.animation = entity.animations.walk;
+		entity.$animation.value = entity.animations.walk;
 		entity.sprite = entity.sprites.walk;
 	} else if (entity.position.x < 0) {
 		entity.stuff = 1;
-		entity.animation = entity.animations.idle;
+		entity.$animation.value = entity.animations.idle;
 		entity.sprite = entity.sprites.idle;
 	}
 });

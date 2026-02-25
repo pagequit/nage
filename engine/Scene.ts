@@ -28,7 +28,7 @@ export type EntityMap = Map<
 	}
 >;
 
-export type AnimationMap = Map<number, SpriteAnimation>;
+export type AnimationMap = Map<number, { value: SpriteAnimation }>;
 
 export type Scene = {
 	data: SceneData;
@@ -120,7 +120,7 @@ function processSystems(ctx: CanvasRenderingContext2D, delta: number): void {
 		(a, b) => a.position.y - b.position.y,
 	)) {
 		if (animationsMap.has(drawable.id)) {
-			animateSprite(animationsMap.get(drawable.id)!, delta);
+			animateSprite(animationsMap.get(drawable.id)!.value, delta);
 		}
 		draw(ctx, drawable);
 	}
@@ -195,12 +195,13 @@ export async function setScene(name: string): Promise<void> {
 				drawableInstances.push(instance);
 			}
 			if (
-				(instance as { id: number; animation: SpriteAnimation }).animation !==
+				(instance as { id: number; $animation: object }).$animation !==
 				undefined
 			) {
 				animateInstances.set(
 					instance.id,
-					(instance as { id: number; animation: SpriteAnimation }).animation, // FIXME
+					(instance as { id: number; $animation: { value: SpriteAnimation } })
+						.$animation, // TODO: unify that $ value component thing
 				);
 			}
 		}

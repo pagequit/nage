@@ -15,5 +15,5 @@ const sprite = {
 defineEntity("portal", {
 	position: createVector(64, 64),
 	sprite,
-	animation: createSpriteAnimation(sprite, 400, 0),
+	$animation: { value: createSpriteAnimation(sprite, 400, 0) },
 });
