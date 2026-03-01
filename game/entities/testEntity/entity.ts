@@ -1,3 +1,4 @@
+import { type Box, box } from "#/engine/Box.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import {
 	createSpriteAnimation,
@@ -39,7 +40,7 @@ const animations = {
 
 const process = defineEntity<{
 	position: Vector;
-	$animation: { value: SpriteAnimation };
+	animation: Box<SpriteAnimation>;
 	animations: {
 		idle: SpriteAnimation;
 		walk: SpriteAnimation;
@@ -52,7 +53,7 @@ const process = defineEntity<{
 	stuff: number;
 }>("testEntity", {
 	position: createVector(),
-	$animation: { value: animations.idle },
+	animation: box(animations.idle),
 	animations,
 	sprite: sprites.idle,
 	sprites,
@@ -63,11 +64,11 @@ process((entity, _delta) => {
 	entity.position.x += entity.stuff * 0.5;
 	if (entity.position.x > viewport.canvas.width - 16) {
 		entity.stuff = -1;
-		entity.$animation.value = entity.animations.walk;
+		entity.animation.value = entity.animations.walk;
 		entity.sprite = entity.sprites.walk;
 	} else if (entity.position.x < 0) {
 		entity.stuff = 1;
-		entity.$animation.value = entity.animations.idle;
+		entity.animation.value = entity.animations.idle;
 		entity.sprite = entity.sprites.idle;
 	}
 });

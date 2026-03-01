@@ -1,4 +1,4 @@
-import { box } from "#/engine/Box";
+import { box } from "#/engine/Box.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { createSpriteAnimation, useSpriteSheetSrc } from "#/engine/Sprite.ts";
 import { createVector } from "#/engine/Vector.ts";
