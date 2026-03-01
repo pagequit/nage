@@ -1,3 +1,4 @@
+import type { Box } from "#/engine/Box.ts";
 import { type Drawable, draw, isDrawable } from "#/engine/Drawable.ts";
 import {
 	entityMap,
@@ -28,7 +29,7 @@ export type EntityMap = Map<
 	}
 >;
 
-export type AnimationMap = Map<number, { value: SpriteAnimation }>;
+export type AnimationMap = Map<number, Box<SpriteAnimation>>;
 
 export type Scene = {
 	data: SceneData;
@@ -119,6 +120,7 @@ function processSystems(ctx: CanvasRenderingContext2D, delta: number): void {
 	for (const drawable of drawables.sort(
 		(a, b) => a.position.y - b.position.y,
 	)) {
+		// this dosn't belong here
 		if (animationsMap.has(drawable.id)) {
 			animateSprite(animationsMap.get(drawable.id)!.value, delta);
 		}
@@ -195,13 +197,12 @@ export async function setScene(name: string): Promise<void> {
 				drawableInstances.push(instance);
 			}
 			if (
-				(instance as { id: number; $animation: object }).$animation !==
-				undefined
+				(instance as { id: number; animation: object }).animation !== undefined
 			) {
 				animateInstances.set(
 					instance.id,
-					(instance as { id: number; $animation: { value: SpriteAnimation } })
-						.$animation, // TODO: unify that $ value component thing
+					(instance as { id: number; animation: Box<SpriteAnimation> })
+						.animation, // TODO
 				);
 			}
 		}

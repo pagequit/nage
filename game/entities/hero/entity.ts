@@ -1,3 +1,4 @@
+import { type Box, box } from "#/engine/Box.ts";
 import { type Circle, createCircle } from "#/engine/Circle.ts";
 import { moveAndCollide } from "#/engine/Collision.ts";
 import { defineEntity } from "#/engine/Entity.ts";
@@ -17,7 +18,7 @@ export type Hero = {
 	velocity: Vector;
 	body: Circle;
 	sprite: Sprite;
-	$animation: { value: SpriteAnimation };
+	animation: Box<SpriteAnimation>;
 };
 
 const speed = 0.05;
@@ -35,7 +36,7 @@ const state: Hero = {
 	velocity: createVector(),
 	body: createCircle(createVector(), 4),
 	sprite,
-	$animation: { value: createSpriteAnimation(sprite, 500, 2) },
+	animation: box(createSpriteAnimation(sprite, 500, 2)),
 };
 
 const process = defineEntity("hero", state);

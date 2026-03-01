@@ -1,3 +1,4 @@
+import { box } from "#/engine/Box";
 import { defineEntity } from "#/engine/Entity.ts";
 import { createSpriteAnimation, useSpriteSheetSrc } from "#/engine/Sprite.ts";
 import { createVector } from "#/engine/Vector.ts";
@@ -15,5 +16,5 @@ const sprite = {
 defineEntity("portal", {
 	position: createVector(64, 64),
 	sprite,
-	$animation: { value: createSpriteAnimation(sprite, 400, 0) },
+	animation: box(createSpriteAnimation(sprite, 400, 0)),
 });
