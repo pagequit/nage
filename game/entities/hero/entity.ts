@@ -1,9 +1,10 @@
 import { type Box, box } from "#/engine/Box.ts";
 import { type Circle, createCircle } from "#/engine/Circle.ts";
 import { moveAndCollide } from "#/engine/Collision.ts";
-import { defineEntity } from "#/engine/Entity.ts";
+import { defineEntity, type Process } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { pointer } from "#/engine/Pointer.ts";
+import { def } from "#/engine/Scene.ts";
 import {
 	createSpriteAnimation,
 	type Sprite,
@@ -38,6 +39,10 @@ const state: Hero = {
 	sprite,
 	animation: box(createSpriteAnimation(sprite, 500, 2)),
 };
+
+const $ = def("hero");
+$<Vector>("position", createVector());
+$<Process>("process", (_id, _delta) => {});
 
 const process = defineEntity("hero", state);
 

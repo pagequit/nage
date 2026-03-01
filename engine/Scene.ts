@@ -1,4 +1,4 @@
-import type { Box } from "#/engine/Box.ts";
+import { type Box, box } from "#/engine/Box.ts";
 import { type Drawable, draw, isDrawable } from "#/engine/Drawable.ts";
 import {
 	entityMap,
@@ -8,6 +8,8 @@ import {
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
 import { animateSprite, type SpriteAnimation } from "#/engine/Sprite.ts";
+import { componentMap, defineComponent } from "./Component";
+import { mulberry32 } from "./lib/mulberry32";
 
 export type EntityData = {
 	name: string;
@@ -228,4 +230,18 @@ export async function setScene(name: string): Promise<void> {
 	for (const handler of sceneChangedHandlers.values()) {
 		handler(data, currentScene.data);
 	}
+}
+
+const next = mulberry32(54850268);
+
+export function def(name: string): <T>(key: string, value: T) => void {
+	const id = next().toString(16).slice(2);
+	defineComponent<string>("name").set(id, name);
+
+	return (key, value) => {
+		const components = defineComponent(key);
+		components.set(id, value);
+
+		console.log(componentMap);
+	};
 }
