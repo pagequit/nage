@@ -31,10 +31,12 @@ export function strokeRect(
 	rect: Rect,
 	color: string = "#fff",
 	alpha: number = 1.0,
+	lineWidth: number = 1,
 ): void {
 	ctx.save();
 	ctx.strokeStyle = color;
 	ctx.globalAlpha = alpha;
+	ctx.lineWidth = lineWidth;
 	ctx.strokeRect(
 		rect.position.x - 0.5,
 		rect.position.y - 0.5,

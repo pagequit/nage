@@ -1,10 +1,10 @@
 import { type Box, box } from "#/engine/Box.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import {
-	createSpriteAnimation,
+	createSpritePlayback,
+	defineSpriteSheet,
 	type Sprite,
-	type SpriteAnimation,
-	useSpriteSheetSrc,
+	type SpritePlayback,
 } from "#/engine/Sprite.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 import { viewport } from "#/engine/Viewport.ts";
@@ -12,8 +12,8 @@ import charIdle from "#/game/assets/char-idle.png";
 import charWalk from "#/game/assets/char-walk.png";
 
 const sheets = {
-	idle: await useSpriteSheetSrc(charIdle, 2, 4),
-	walk: await useSpriteSheetSrc(charWalk, 4, 4),
+	idle: await defineSpriteSheet(charIdle, 2, 4),
+	walk: await defineSpriteSheet(charWalk, 4, 4),
 };
 
 const sprites = {
@@ -34,16 +34,16 @@ const sprites = {
 };
 
 const animations = {
-	idle: createSpriteAnimation(sprites.idle, 500, 2),
-	walk: createSpriteAnimation(sprites.walk, 250, 2),
+	idle: createSpritePlayback(sprites.idle, 500, 2),
+	walk: createSpritePlayback(sprites.walk, 250, 2),
 };
 
 const process = defineEntity<{
 	position: Vector;
-	animation: Box<SpriteAnimation>;
+	animation: Box<SpritePlayback>;
 	animations: {
-		idle: SpriteAnimation;
-		walk: SpriteAnimation;
+		idle: SpritePlayback;
+		walk: SpritePlayback;
 	};
 	sprite: Sprite;
 	sprites: {

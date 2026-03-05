@@ -1,9 +1,3 @@
-export const componentMap = new Map();
+import type { Box } from "#/engine/Box.ts";
 
-export function defineComponent<T>(key: string): Map<string, T> {
-	if (!componentMap.has(key)) {
-		componentMap.set(key, new Map());
-	}
-
-	return componentMap.get(key)!;
-}
+export type Component<T> = Record<string, Box<T>>;

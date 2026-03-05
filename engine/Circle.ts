@@ -17,10 +17,12 @@ export function strokeCircle(
 	circle: Circle,
 	color: string = "#fff",
 	alpha: number = 1.0,
+	lineWidth: number = 1,
 ): void {
 	ctx.save();
 	ctx.strokeStyle = color;
 	ctx.globalAlpha = alpha;
+	ctx.lineWidth = lineWidth;
 	ctx.beginPath();
 	ctx.arc(circle.position.x, circle.position.y, circle.radius, 0, 2 * Math.PI);
 	ctx.stroke();

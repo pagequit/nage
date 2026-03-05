@@ -61,12 +61,17 @@ export function setSegmentIntersection(
 export function drawSegment(
 	segment: Segment,
 	ctx: CanvasRenderingContext2D,
-	color: string,
+	color: string = "#fff",
+	alpha: number = 1.0,
+	lineWidth: number = 1,
 ): void {
-	ctx.lineWidth = 2;
+	ctx.save();
 	ctx.strokeStyle = color;
+	ctx.globalAlpha = alpha;
+	ctx.lineWidth = lineWidth;
 	ctx.beginPath();
 	ctx.moveTo(segment[0].x, segment[0].y);
 	ctx.lineTo(segment[1].x, segment[1].y);
 	ctx.stroke();
+	ctx.restore();
 }

@@ -11,7 +11,7 @@ import type { Entity } from "#/engine/Entity.ts";
 import {
 	currentScene,
 	type SceneData,
-	sceneChangedHandlers,
+	sceneChangeSet,
 	sceneGraph,
 	setScene,
 } from "#/engine/Scene.ts";
@@ -86,7 +86,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 		await setScene(name);
 	};
 
-	sceneChangedHandlers.add((data) => {
+	sceneChangeSet.add((data) => {
 		setActiveEntity(null);
 		setSceneData(data);
 		setEntities(mapSceneEntities(data));

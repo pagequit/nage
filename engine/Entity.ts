@@ -1,18 +1,13 @@
-export type Entity<T extends object> = {
-	name: string;
-	state: T;
-};
+export type Process = (id: string, delta: number) => void;
 
-export type Process<T extends object> = (instance: T, delta: number) => void;
+export const entityProcessMap = new Map<string, Process>();
+export const entityBlueprintsMap = new Map<string, Map<string, unknown>>();
 
-export const entityMap = new Map();
-export const entityProcessMap = new Map();
-
-export function defineEntity<T extends object>(
+export function defineEntity<T extends { [key: string]: unknown }>(
 	name: string,
-	state: T,
-): (fn: Process<T>) => void {
-	entityMap.set(name, state);
+	blueprints: T,
+): (fn: Process) => void {
+	entityBlueprintsMap.set(name, new Map(Object.entries(blueprints)));
 
 	return (fn) => {
 		entityProcessMap.set(name, fn);

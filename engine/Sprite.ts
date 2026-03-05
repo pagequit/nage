@@ -16,8 +16,7 @@ export type SpriteSheet = {
 	frameHeight: number;
 };
 
-export type SpriteAnimation = {
-	sprite: Sprite;
+export type SpritePlayback = {
 	xIndex: number;
 	yIndex: number;
 	frameTime: number;
@@ -26,7 +25,7 @@ export type SpriteAnimation = {
 
 // It's not possible to crate a structured clone of a HTMLImageElement and it would be a
 // waste of memory anyways since we use the HTMLImageElement only as reference for draw calls.
-// Therefore the SpriteSheet will stored by it's image source.
+// Therefore the SpriteSheet will stored and referenced by it's image source.
 export const spriteSheetMap = new Map<string, SpriteSheet>();
 
 export function createSpriteSheet(
@@ -43,7 +42,23 @@ export function createSpriteSheet(
 	};
 }
 
-export async function useSpriteSheetSrc(
+export function createSprite(
+	src: string,
+	xStartFrame: number = 0,
+	yStartFrame: number = 0,
+): Sprite {
+	const spriteSheet = spriteSheetMap.get(src)!;
+
+	return {
+		src,
+		xStart: xStartFrame * spriteSheet.frameWidth,
+		yStart: yStartFrame * spriteSheet.frameHeight,
+		width: spriteSheet.frameWidth,
+		height: spriteSheet.frameHeight,
+	};
+}
+
+export async function defineSpriteSheet(
 	src: string,
 	xFrames: number,
 	yFrames: number,
@@ -56,15 +71,11 @@ export async function useSpriteSheetSrc(
 	return src;
 }
 
-export function createSpriteAnimation(
-	sprite: Sprite,
+export function createSpritePlayback(
 	frameTime: number,
 	yIndex: number,
-): SpriteAnimation {
-	sprite.yStart = yIndex * spriteSheetMap.get(sprite.src)!.frameHeight;
-
+): SpritePlayback {
 	return {
-		sprite,
 		xIndex: 0,
 		yIndex,
 		frameTime,
@@ -95,14 +106,18 @@ export function drawSprite(
 	);
 }
 
-export function animateSprite(animation: SpriteAnimation, delta: number): void {
-	const sheet = spriteSheetMap.get(animation.sprite.src)!;
-	if ((animation.frameDelta += delta) > animation.frameTime) {
-		animation.frameDelta = 0;
-		if ((animation.xIndex += 1) >= sheet.xFrames) {
-			animation.xIndex = 0;
+export function animateSprite(
+	sprite: Sprite,
+	playback: SpritePlayback,
+	delta: number,
+): void {
+	const sheet = spriteSheetMap.get(sprite.src)!;
+	if ((playback.frameDelta += delta) > playback.frameTime) {
+		playback.frameDelta = 0;
+		if ((playback.xIndex += 1) >= sheet.xFrames) {
+			playback.xIndex = 0;
 		}
 	}
 
-	animation.sprite.xStart = animation.xIndex * sheet.frameWidth;
+	sprite.xStart = playback.xIndex * sheet.frameWidth;
 }

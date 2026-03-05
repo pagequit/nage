@@ -1,65 +1,42 @@
 import { type Box, box } from "#/engine/Box.ts";
 import { type Drawable, draw, isDrawable } from "#/engine/Drawable.ts";
-import {
-	entityMap,
-	entityProcessMap,
-	type Process as ProcessEntity,
-} from "#/engine/Entity.ts";
+import { entityBlueprintsMap, entityProcessMap } from "#/engine/Entity.ts";
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
-import { animateSprite, type SpriteAnimation } from "#/engine/Sprite.ts";
-import { componentMap, defineComponent } from "./Component";
-import { mulberry32 } from "./lib/mulberry32";
+import type MapProxy from "#/engine/lib/MapProxy.ts";
+import { mulberry32 } from "#/engine/lib/mulberry32.ts";
+import { animateSprite, type SpritePlayback } from "#/engine/Sprite.ts";
 
-export type EntityData = {
-	name: string;
-	init: object;
-};
+export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
+export type PreProcess = () => void;
+export type PostProcess = () => void;
 
 export type SceneData = {
 	name: string;
 	width: number;
 	height: number;
-	entities: Array<EntityData>;
+	entities: string[];
 };
 
-export type EntityMap = Map<
-	string,
-	{
-		process: ProcessEntity<{ id: number }>;
-		instances: Array<{ id: number }>;
-	}
->;
-
-export type AnimationMap = Map<number, Box<SpriteAnimation>>;
+export type ComponentsMap = Map<string, MapProxy<string, unknown>>;
 
 export type Scene = {
 	data: SceneData;
-	entityMap: EntityMap;
+	components: ComponentsMap;
 	process: Process;
 };
 
-export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
-export type PreProcess = (entityMap: EntityMap) => void;
-export type PostProcess = (entityMap: EntityMap) => void;
+export type SceneChange = (to: SceneData, from: SceneData) => void;
 
-export type SceneChangeHandler = (to: SceneData, from: SceneData) => void;
-
+export const sceneDataMap = new Map<string, SceneData>();
 export const sceneProcessMap = new Map<string, Process>();
+export const sceneComponentsMap = new Map<string, ComponentsMap>();
+
 export const scenePreProcessMap = new Map<string, PreProcess>();
 export const scenePostProcessMap = new Map<string, PostProcess>();
 
-export const sceneChangedHandlers = new Set<SceneChangeHandler>();
-
-export const sceneDataMap = new Map<string, SceneData>();
-export const sceneEntiyMap = new Map<string, EntityMap>();
+export const sceneChangeSet = new Set<SceneChange>();
 export const sceneGraph: Graph<string> = new Map();
-
-const sceneInstancesDrawMap = new Map<
-	string,
-	Array<Drawable & { id: number }>
->();
-const sceneInstancesAnimationMap = new Map<string, AnimationMap>();
 
 export const [loadScene, sceneCache] = useWithAsyncCache(
 	async (name: string) => {
@@ -203,7 +180,7 @@ export async function setScene(name: string): Promise<void> {
 			) {
 				animateInstances.set(
 					instance.id,
-					(instance as { id: number; animation: Box<SpriteAnimation> })
+					(instance as { id: number; animation: Box<SpritePlayback> })
 						.animation, // TODO
 				);
 			}
@@ -227,7 +204,7 @@ export async function setScene(name: string): Promise<void> {
 
 	currentScene.entityMap = entityInstanceMap;
 
-	for (const handler of sceneChangedHandlers.values()) {
+	for (const handler of sceneChangeSet.values()) {
 		handler(data, currentScene.data);
 	}
 }
@@ -244,4 +221,8 @@ export function def(name: string): <T>(key: string, value: T) => void {
 
 		console.log(componentMap);
 	};
+}
+
+export default function <T>(name: string): MapProxy<string, T> {
+	return currentScene.components.get(name) as MapProxy<string, T>;
 }
