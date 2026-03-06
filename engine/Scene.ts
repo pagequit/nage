@@ -1,21 +1,22 @@
-import { type Box, box } from "#/engine/Box.ts";
-import { type Drawable, draw, isDrawable } from "#/engine/Drawable.ts";
-import { entityBlueprintsMap, entityProcessMap } from "#/engine/Entity.ts";
+import { entityBlueprintMap, entityProcessMap } from "#/engine/Entity.ts";
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
 import type MapProxy from "#/engine/lib/MapProxy.ts";
-import { mulberry32 } from "#/engine/lib/mulberry32.ts";
-import { animateSprite, type SpritePlayback } from "#/engine/Sprite.ts";
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
 export type PreProcess = () => void;
 export type PostProcess = () => void;
 
+export type EntityData<T> = {
+	name: string;
+	init: T;
+};
+
 export type SceneData = {
 	name: string;
 	width: number;
 	height: number;
-	entities: string[];
+	entities: Array<EntityData<unknown>>;
 };
 
 export type ComponentsMap = Map<string, MapProxy<string, unknown>>;
@@ -38,41 +39,6 @@ export const scenePostProcessMap = new Map<string, PostProcess>();
 export const sceneChangeSet = new Set<SceneChange>();
 export const sceneGraph: Graph<string> = new Map();
 
-export const [loadScene, sceneCache] = useWithAsyncCache(
-	async (name: string) => {
-		await import(`#/game/scenes/${name}/scene.ts`);
-
-		const data = sceneDataMap.get(name)!;
-		const entityInstanceMap = sceneEntiyMap.get(name)!;
-		entityInstanceMap.clear();
-
-		await Promise.all(
-			data.entities.map(async (entityData: EntityData, index: number) => {
-				await import(`#/game/entities/${entityData.name}/entity.ts`);
-
-				if (!entityInstanceMap.has(entityData.name)) {
-					entityInstanceMap.set(entityData.name, {
-						process: entityProcessMap.get(entityData.name) ?? (() => {}),
-						instances: [],
-					});
-				}
-
-				try {
-					entityInstanceMap.get(entityData.name)!.instances.push(
-						structuredClone({
-							...entityMap.get(entityData.name)!,
-							...entityData,
-							id: index,
-						}),
-					);
-				} catch (error) {
-					console.error(entityData.name, error);
-				}
-			}),
-		);
-	},
-);
-
 export const currentScene: Scene = {
 	data: {
 		name: "",
@@ -81,29 +47,12 @@ export const currentScene: Scene = {
 		entities: [],
 	},
 	process: () => {},
-	entityMap: new Map(),
+	components: new Map(),
 };
 
 function processEntities(delta: number): void {
-	for (const entry of currentScene.entityMap.values()) {
-		for (const instance of entry.instances) {
-			entry.process(instance, delta);
-		}
-	}
-}
-
-function processSystems(ctx: CanvasRenderingContext2D, delta: number): void {
-	const drawables = sceneInstancesDrawMap.get(currentScene.data.name)!;
-	const animationsMap = sceneInstancesAnimationMap.get(currentScene.data.name)!;
-
-	for (const drawable of drawables.sort(
-		(a, b) => a.position.y - b.position.y,
-	)) {
-		// this dosn't belong here
-		if (animationsMap.has(drawable.id)) {
-			animateSprite(animationsMap.get(drawable.id)!.value, delta);
-		}
-		draw(ctx, drawable);
+	for (const entity of currentScene.data.entities) {
+		entityProcessMap.get(entity.name)!("", delta); // TODO
 	}
 }
 
@@ -116,17 +65,28 @@ function linkScenes(a: string, b: string): void {
 }
 
 export function defineScene(data: SceneData): {
-	linkScenes: <T extends readonly string[]>(
-		names: T,
-	) => (name: T[number]) => Promise<void>;
 	process: (fn: Process) => void;
 	preProcess: (fn: PreProcess) => void;
 	postProcess: (fn: PostProcess) => void;
+	linkScenes: <T extends readonly string[]>(
+		names: T,
+	) => (name: T[number]) => Promise<void>;
 } {
 	sceneDataMap.set(data.name, data);
-	sceneEntiyMap.set(data.name, new Map());
 
 	return {
+		process(fn) {
+			sceneProcessMap.set(data.name, (ctx, delta) => {
+				fn(ctx, delta);
+				processEntities(delta);
+			});
+		},
+		preProcess(fn) {
+			scenePreProcessMap.set(data.name, fn);
+		},
+		postProcess(fn) {
+			scenePostProcessMap.set(data.name, fn);
+		},
 		linkScenes(ids) {
 			for (const id of ids) {
 				linkScenes(data.name, id);
@@ -136,21 +96,23 @@ export function defineScene(data: SceneData): {
 				return setScene(id);
 			};
 		},
-		process(fn) {
-			sceneProcessMap.set(data.name, (ctx, delta) => {
-				fn(ctx, delta);
-				processEntities(delta);
-				processSystems(ctx, delta);
-			});
-		},
-		preProcess(fn) {
-			scenePreProcessMap.set(data.name, fn);
-		},
-		postProcess(fn) {
-			scenePostProcessMap.set(data.name, fn);
-		},
 	};
 }
+
+const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
+	await import(`#/game/scenes/${name}/scene.ts`);
+
+	const data = sceneDataMap.get(name)!;
+
+	await Promise.all(
+		data.entities.map(
+			async (entityData: EntityData<unknown>, index: number) => {
+				await import(`#/game/entities/${entityData.name}/entity.ts`);
+				// TODO
+			},
+		),
+	);
+});
 
 export async function setScene(name: string): Promise<void> {
 	await loadScene(name);
@@ -162,39 +124,15 @@ export async function setScene(name: string): Promise<void> {
 
 	const data = sceneDataMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
-	const entityInstanceMap = sceneEntiyMap.get(name)!;
-
-	const drawableInstances: Array<Drawable & { id: number }> = [];
-	sceneInstancesDrawMap.set(data.name, drawableInstances);
-
-	const animateInstances: AnimationMap = new Map();
-	sceneInstancesAnimationMap.set(data.name, animateInstances);
-
-	for (const entity of entityInstanceMap.values()) {
-		for (const instance of entity.instances) {
-			if (isDrawable(instance)) {
-				drawableInstances.push(instance);
-			}
-			if (
-				(instance as { id: number; animation: object }).animation !== undefined
-			) {
-				animateInstances.set(
-					instance.id,
-					(instance as { id: number; animation: Box<SpritePlayback> })
-						.animation, // TODO
-				);
-			}
-		}
-	}
 
 	const preProcess = scenePreProcessMap.get(name);
 	if (preProcess) {
-		preProcess(sceneEntiyMap.get(name)!);
+		preProcess();
 	}
 
 	const postProcess = scenePostProcessMap.get(currentScene.data.name);
 	if (postProcess) {
-		postProcess(sceneEntiyMap.get(name)!);
+		postProcess();
 	}
 
 	currentScene.data = data;
@@ -202,25 +140,9 @@ export async function setScene(name: string): Promise<void> {
 
 	currentScene.process = process;
 
-	currentScene.entityMap = entityInstanceMap;
-
-	for (const handler of sceneChangeSet.values()) {
-		handler(data, currentScene.data);
+	for (const callback of sceneChangeSet.values()) {
+		callback(data, currentScene.data);
 	}
-}
-
-const next = mulberry32(54850268);
-
-export function def(name: string): <T>(key: string, value: T) => void {
-	const id = next().toString(16).slice(2);
-	defineComponent<string>("name").set(id, name);
-
-	return (key, value) => {
-		const components = defineComponent(key);
-		components.set(id, value);
-
-		console.log(componentMap);
-	};
 }
 
 export default function <T>(name: string): MapProxy<string, T> {
