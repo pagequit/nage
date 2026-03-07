@@ -7,7 +7,6 @@ import {
 	Show,
 } from "solid-js";
 import { render } from "solid-js/web";
-import type { Entity } from "#/engine/Entity.ts";
 import {
 	currentScene,
 	type SceneData,
@@ -73,9 +72,7 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
-	const [activeEntity, setActiveEntity] = createSignal<null | Entity<object>>(
-		null,
-	);
+	const [activeEntity, setActiveEntity] = createSignal<null | object>(null); // TODO
 
 	createEffect(() => {
 		setScale(currentScale());

@@ -108,7 +108,10 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 		data.entities.map(
 			async (entityData: EntityData<unknown>, index: number) => {
 				await import(`#/game/entities/${entityData.name}/entity.ts`);
-				// TODO
+				for (const blueprint of entityBlueprintMap
+					.get(entityData.name)!
+					.entries()) {
+				}
 			},
 		),
 	);

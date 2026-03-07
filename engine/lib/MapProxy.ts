@@ -7,7 +7,7 @@ export default class MapProxy<K, V> {
 		this.map = new Map();
 	}
 
-	get(key: K): V | undefined {
-		return this.map.get(key)?.value;
+	get(key: K): Box<V> | undefined {
+		return this.map.get(key);
 	}
 }

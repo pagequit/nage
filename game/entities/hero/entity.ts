@@ -1,5 +1,3 @@
-// import { createCircle } from "#/engine/Circle.ts";
-// import { moveAndCollide } from "#/engine/Collision.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { pointer } from "#/engine/Pointer.ts";
@@ -19,32 +17,26 @@ const process = defineEntity("hero", {
 	position: createVector(),
 	sprite: createSprite(idleSrc),
 	playback: createSpritePlayback(500, 2),
-	// body: createCircle(createVector(), 4),
 	velocity: createVector(),
 });
 
 process((id, delta) => {
 	const position = $<Vector>("position").get(id)!;
-	const velocity = velocityMap.get(id)!;
-	// const body = bodyMap.get(id);
+	const velocity = $<Vector>("velocity").get(id)!;
 
 	if (pointer.isDown) {
-		position.x = pointer.position.x;
-		position.y = pointer.position.y;
+		position.value.x = pointer.position.x;
+		position.value.y = pointer.position.y;
 	}
 
-	velocity.x -= keyboardInput.arrowLeft ? speed : 0;
-	velocity.x += keyboardInput.arrowRight ? speed : 0;
-	velocity.y -= keyboardInput.arrowUp ? speed : 0;
-	velocity.y += keyboardInput.arrowDown ? speed : 0;
+	velocity.value.x -= keyboardInput.arrowLeft ? speed : 0;
+	velocity.value.x += keyboardInput.arrowRight ? speed : 0;
+	velocity.value.y -= keyboardInput.arrowUp ? speed : 0;
+	velocity.value.y += keyboardInput.arrowDown ? speed : 0;
 
-	// const collision = moveAndCollide(body, velocity, delta);
-	// slideOnCollision(velocity, collision);
-	// slide(velocity, collision.normal);
+	position.value.x = Math.round(velocity.value.x * delta + position.value.x);
+	position.value.y = Math.round(velocity.value.y * delta + position.value.y);
 
-	position.x = Math.round(velocity.x * delta + position.x);
-	position.y = Math.round(velocity.y * delta + position.y);
-
-	velocity.x = 0;
-	velocity.y = 0;
+	velocity.value.x = 0;
+	velocity.value.y = 0;
 });

@@ -1,5 +1,5 @@
-import { type Box, box } from "#/engine/Box.ts";
 import { defineEntity } from "#/engine/Entity.ts";
+import $ from "#/engine/Scene.ts";
 import {
 	createSpritePlayback,
 	defineSpriteSheet,
@@ -11,21 +11,21 @@ import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 import charWalk from "#/game/assets/char-walk.png";
 
-const sheets = {
+const srcs = {
 	idle: await defineSpriteSheet(charIdle, 2, 4),
 	walk: await defineSpriteSheet(charWalk, 4, 4),
 };
 
 const sprites = {
 	idle: {
-		src: sheets.idle,
+		src: srcs.idle,
 		xStart: 0,
 		yStart: 0,
 		width: 16,
 		height: 16,
 	},
 	walk: {
-		src: sheets.walk,
+		src: srcs.walk,
 		xStart: 0,
 		yStart: 0,
 		width: 16,
@@ -33,15 +33,15 @@ const sprites = {
 	},
 };
 
-const animations = {
-	idle: createSpritePlayback(sprites.idle, 500, 2),
-	walk: createSpritePlayback(sprites.walk, 250, 2),
+const playbacks = {
+	idle: createSpritePlayback(500, 2),
+	walk: createSpritePlayback(250, 2),
 };
 
 const process = defineEntity<{
 	position: Vector;
-	animation: Box<SpritePlayback>;
-	animations: {
+	playback: SpritePlayback;
+	playbacks: {
 		idle: SpritePlayback;
 		walk: SpritePlayback;
 	};
@@ -53,22 +53,27 @@ const process = defineEntity<{
 	stuff: number;
 }>("testEntity", {
 	position: createVector(),
-	animation: box(animations.idle),
-	animations,
+	playback: playbacks.idle,
+	playbacks: playbacks,
 	sprite: sprites.idle,
 	sprites,
 	stuff: 1,
 });
 
-process((entity, _delta) => {
-	entity.position.x += entity.stuff * 0.5;
-	if (entity.position.x > viewport.canvas.width - 16) {
-		entity.stuff = -1;
-		entity.animation.value = entity.animations.walk;
-		entity.sprite = entity.sprites.walk;
-	} else if (entity.position.x < 0) {
-		entity.stuff = 1;
-		entity.animation.value = entity.animations.idle;
-		entity.sprite = entity.sprites.idle;
+process((id, _delta) => {
+	const position = $<Vector>("position").get(id)!;
+	const stuff = $<number>("stuff").get(id)!;
+	const sprite = $<Sprite>("sprite").get(id)!;
+	const playback = $<SpritePlayback>("playback").get(id)!;
+
+	position.value.x += stuff.value * 0.5;
+	if (position.value.x > viewport.canvas.width - 16) {
+		stuff.value = -1;
+		playback.value = playbacks.walk;
+		sprite.value = sprites.walk;
+	} else if (position.value.x < 0) {
+		stuff.value = 1;
+		playback.value = playbacks.idle;
+		sprite.value = sprites.idle;
 	}
 });
