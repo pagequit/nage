@@ -1,7 +1,12 @@
-import { entityBlueprintMap, entityProcessMap } from "#/engine/Entity.ts";
+import { type Box, box } from "#/engine/Box.ts";
+import {
+	type Process as EntityProcess,
+	entityBlueprintMap,
+	entityProcessMap,
+} from "#/engine/Entity.ts";
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
-import type MapProxy from "#/engine/lib/MapProxy.ts";
+import MapProxy from "#/engine/lib/MapProxy.ts";
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
 export type PreProcess = () => void;
@@ -46,13 +51,15 @@ export const currentScene: Scene = {
 		height: 0,
 		entities: [],
 	},
-	process: () => {},
 	components: new Map(),
+	process: () => {},
 };
 
 function processEntities(delta: number): void {
-	for (const entity of currentScene.data.entities) {
-		entityProcessMap.get(entity.name)!("", delta); // TODO
+	for (const [id, processBox] of sceneComponentsMap
+		.get(currentScene.data.name)!
+		.get("process")!.map) {
+		(processBox as Box<EntityProcess>).value(id, delta);
 	}
 }
 
@@ -101,16 +108,36 @@ export function defineScene(data: SceneData): {
 
 const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 	await import(`#/game/scenes/${name}/scene.ts`);
-
 	const data = sceneDataMap.get(name)!;
+
+	const componentsMap = new Map<string, MapProxy<string, unknown>>();
+	sceneComponentsMap.set(name, componentsMap);
+
+	const entityProcessMapProxy = new MapProxy<string, EntityProcess>();
+	componentsMap.set("process", entityProcessMapProxy);
 
 	await Promise.all(
 		data.entities.map(
 			async (entityData: EntityData<unknown>, index: number) => {
 				await import(`#/game/entities/${entityData.name}/entity.ts`);
-				for (const blueprint of entityBlueprintMap
+				const id = `${index}_${entityData.name}`;
+
+				const entityProcess = entityProcessMap.get(entityData.name);
+				if (entityProcess !== undefined) {
+					entityProcessMapProxy.map.set(id, box(entityProcess));
+				}
+
+				for (const [key, value] of entityBlueprintMap
 					.get(entityData.name)!
 					.entries()) {
+					if (componentsMap.has(key)) {
+						componentsMap.get(key)?.map.set(id, box(structuredClone(value)));
+					} else {
+						componentsMap.set(
+							key,
+							new MapProxy([[id, box(structuredClone(value))]]),
+						);
+					}
 				}
 			},
 		),
@@ -126,6 +153,7 @@ export async function setScene(name: string): Promise<void> {
 	}
 
 	const data = sceneDataMap.get(name)!;
+	const components = sceneComponentsMap.get(name)!;
 	const process = sceneProcessMap.get(name)!;
 
 	const preProcess = scenePreProcessMap.get(name);
@@ -141,6 +169,7 @@ export async function setScene(name: string): Promise<void> {
 	currentScene.data = data;
 	self.dispatchEvent(new Event("resize"));
 
+	currentScene.components = components;
 	currentScene.process = process;
 
 	for (const callback of sceneChangeSet.values()) {
