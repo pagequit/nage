@@ -124,14 +124,14 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 
 				const entityProcess = entityProcessMap.get(entityData.name);
 				if (entityProcess !== undefined) {
-					entityProcessMapProxy.map.set(id, box(entityProcess));
+					entityProcessMapProxy.map.set(id, box(entityProcess)); // TODO: avoid boxing
 				}
 
 				for (const [key, value] of entityBlueprintMap
 					.get(entityData.name)!
 					.entries()) {
 					if (componentsMap.has(key)) {
-						componentsMap.get(key)?.map.set(id, box(structuredClone(value)));
+						componentsMap.get(key)!.map.set(id, box(structuredClone(value)));
 					} else {
 						componentsMap.set(
 							key,
