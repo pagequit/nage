@@ -38,6 +38,8 @@ export const sceneDataMap = new Map<string, SceneData>();
 export const sceneProcessMap = new Map<string, Process>();
 export const sceneComponentsMap = new Map<string, ComponentsMap>();
 
+const sceneEntityProcessMap = new Map<string, Map<string, EntityProcess>>();
+
 export const scenePreProcessMap = new Map<string, PreProcess>();
 export const scenePostProcessMap = new Map<string, PostProcess>();
 
@@ -56,10 +58,10 @@ export const currentScene: Scene = {
 };
 
 function processEntities(delta: number): void {
-	for (const [id, processBox] of sceneComponentsMap
-		.get(currentScene.data.name)!
-		.get("process")!.map) {
-		(processBox as Box<EntityProcess>).value(id, delta);
+	for (const [id, process] of sceneEntityProcessMap.get(
+		currentScene.data.name,
+	)!) {
+		process(id, delta);
 	}
 }
 
@@ -110,11 +112,11 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 	await import(`#/game/scenes/${name}/scene.ts`);
 	const data = sceneDataMap.get(name)!;
 
+	const entityProcessMap = new Map<string, EntityProcess>();
+	sceneEntityProcessMap.set(name, entityProcessMap);
+
 	const componentsMap = new Map<string, MapProxy<string, unknown>>();
 	sceneComponentsMap.set(name, componentsMap);
-
-	const entityProcessMapProxy = new MapProxy<string, EntityProcess>();
-	componentsMap.set("process", entityProcessMapProxy);
 
 	await Promise.all(
 		data.entities.map(
@@ -124,7 +126,7 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 
 				const entityProcess = entityProcessMap.get(entityData.name);
 				if (entityProcess !== undefined) {
-					entityProcessMapProxy.map.set(id, box(entityProcess)); // TODO: avoid boxing
+					entityProcessMap.set(id, entityProcess);
 				}
 
 				for (const [key, value] of entityBlueprintMap
