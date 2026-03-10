@@ -1,6 +1,14 @@
 import { listenKeyboard } from "#/engine/Keyboard.ts";
 import { listenPointer } from "#/engine/Pointer.ts";
-import { currentScene, setScene } from "#/engine/Scene.ts";
+import $, { currentScene, setScene } from "#/engine/Scene.ts";
+import {
+	animateSprite,
+	drawSprite,
+	type Sprite,
+	type SpritePlayback,
+	spriteSheetMap,
+} from "#/engine/Sprite.ts";
+import type { Vector } from "#/engine/Vector.ts";
 import {
 	initViewport,
 	resetCtx,
@@ -16,6 +24,24 @@ function animate(timestamp: number): void {
 
 	resetCtx();
 	currentScene.process(viewport.ctx, delta);
+
+	for (const [id, playback] of $<SpritePlayback>("playback").entries()) {
+		const sprite = $<Sprite>("sprite").get(id)!;
+		animateSprite(sprite.value, playback.value, delta);
+	}
+
+	for (const [id, sprite] of $<Sprite>("sprite").entries()) {
+		const position = $<Vector>("position").get(id)!;
+		drawSprite(
+			viewport.ctx,
+			spriteSheetMap.get(sprite.value.src)!,
+			sprite.value.xStart,
+			sprite.value.yStart,
+			position.value.x,
+			position.value.y,
+		);
+	}
+
 	requestAnimationFrame(animate);
 }
 

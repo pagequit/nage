@@ -10,7 +10,7 @@ import portal from "#/game/assets/portal.png";
 const portalSrc = await defineSpriteSheet(portal, 3, 1);
 
 defineEntity("portal", {
-	position: createVector(64, 64),
+	position: createVector(),
 	sprite: createSprite(portalSrc),
-	animation: createSpritePlayback(400, 0),
+	playback: createSpritePlayback(400, 0),
 });

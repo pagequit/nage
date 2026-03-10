@@ -1,4 +1,4 @@
-import { type Box, box } from "#/engine/Box.ts";
+import { box } from "#/engine/Box.ts";
 import {
 	type Process as EntityProcess,
 	entityBlueprintMap,
@@ -112,8 +112,8 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 	await import(`#/game/scenes/${name}/scene.ts`);
 	const data = sceneDataMap.get(name)!;
 
-	const entityProcessMap = new Map<string, EntityProcess>();
-	sceneEntityProcessMap.set(name, entityProcessMap);
+	const localEntityProcessMap = new Map<string, EntityProcess>();
+	sceneEntityProcessMap.set(name, localEntityProcessMap);
 
 	const componentsMap = new Map<string, MapProxy<string, unknown>>();
 	sceneComponentsMap.set(name, componentsMap);
@@ -126,19 +126,21 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 
 				const entityProcess = entityProcessMap.get(entityData.name);
 				if (entityProcess !== undefined) {
-					entityProcessMap.set(id, entityProcess);
+					localEntityProcessMap.set(id, entityProcess);
 				}
 
 				for (const [key, value] of entityBlueprintMap
 					.get(entityData.name)!
 					.entries()) {
+					const boxedValue = box(
+						structuredClone(
+							(entityData.init as Record<string, unknown>)[key] ?? value,
+						),
+					);
 					if (componentsMap.has(key)) {
-						componentsMap.get(key)!.map.set(id, box(structuredClone(value)));
+						componentsMap.get(key)!.map.set(id, boxedValue);
 					} else {
-						componentsMap.set(
-							key,
-							new MapProxy([[id, box(structuredClone(value))]]),
-						);
+						componentsMap.set(key, new MapProxy([[id, boxedValue]]));
 					}
 				}
 			},
