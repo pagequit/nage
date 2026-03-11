@@ -34,17 +34,15 @@ export type Scene = {
 
 export type SceneChange = (to: SceneData, from: SceneData) => void;
 
-export const sceneDataMap = new Map<string, SceneData>();
-export const sceneProcessMap = new Map<string, Process>();
 export const sceneComponentsMap = new Map<string, ComponentsMap>();
-
-const sceneEntityProcessMap = new Map<string, Map<string, EntityProcess>>();
-
-export const scenePreProcessMap = new Map<string, PreProcess>();
-export const scenePostProcessMap = new Map<string, PostProcess>();
-
 export const sceneChangeSet = new Set<SceneChange>();
 export const sceneGraph: Graph<string> = new Map();
+
+const sceneEntityProcessMap = new Map<string, Map<string, EntityProcess>>();
+const sceneDataMap = new Map<string, SceneData>();
+const sceneProcessMap = new Map<string, Process>();
+const scenePreProcessMap = new Map<string, PreProcess>();
+const scenePostProcessMap = new Map<string, PostProcess>();
 
 export const currentScene: Scene = {
 	data: {

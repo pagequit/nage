@@ -29,6 +29,15 @@
 					"y": 32
 				}
 			}
+		},
+		{
+			"name": "testEntity",
+			"init": {
+				"position": {
+					"x": 64,
+					"y": 64
+				}
+			}
 		}
 	]
 }
