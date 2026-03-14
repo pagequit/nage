@@ -23,7 +23,7 @@ sceneChangeSet.add((sceneData) => {
 		});
 });
 
-export function drawSprites(ctx: CanvasRenderingContext2D) {
+export function drawSprites(ctx: CanvasRenderingContext2D): void {
 	for (const drawable of drawables.sort(
 		(a, b) => a.position.value.y - b.position.value.y,
 	)) {
