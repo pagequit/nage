@@ -1,19 +1,16 @@
 import "./main.css";
-import {
-	type Component,
-	createEffect,
-	createSignal,
-	onMount,
-	Show,
-} from "solid-js";
+import { type Component, createEffect, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
-import {
+import $, {
 	currentScene,
 	type SceneData,
 	sceneChangeSet,
 	sceneGraph,
+	sceneProcessMap,
 	setScene,
 } from "#/engine/Scene.ts";
+import { type Sprite, spriteSheetMap } from "#/engine/Sprite.ts";
+import type { Vector } from "#/engine/Vector.ts";
 import { setScale, viewport } from "#/engine/Viewport.ts";
 import { InputField } from "./controls/InputField.tsx";
 import { RangeSlider } from "./controls/RangeSlider.tsx";
@@ -22,8 +19,6 @@ import { ItemList, type ItemsRef } from "./ItemList.tsx";
 import { ArrowAutofitHeightIcon } from "./icons/ArrowAutofitHeight.tsx";
 import { ArrowAutofitWidthIcon } from "./icons/ArrowAutofitWidth.tsx";
 import { FileIcon } from "./icons/File.tsx";
-import { LetterXIcon } from "./icons/LetterX.tsx";
-import { LetterYIcon } from "./icons/LetterY.tsx";
 import { ZoomScanIcon } from "./icons/ZoomScan.tsx";
 
 async function fetchScenes(): Promise<string[]> {
@@ -72,7 +67,6 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	const [entities, setEntities] = createSignal(
 		mapSceneEntities(currentScene.data),
 	);
-	const [activeEntity, setActiveEntity] = createSignal<null | object>(null); // TODO
 
 	createEffect(() => {
 		setScale(currentScale());
@@ -84,54 +78,39 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 	};
 
 	sceneChangeSet.add((data) => {
-		setActiveEntity(null);
 		setSceneData(data);
 		setEntities(mapSceneEntities(data));
 	});
 
 	const selectEntity = (items: ItemsRef): void => {
-		console.log(items);
-		// const activeRef = items.find((ref) => ref.item.isActive)!;
-		// const instances = currentScene.entityInstanceMap.get(
-		// 	activeRef.item.label,
-		// )!.instances;
+		const activeRef = items.find((ref) => ref.item.isActive)!;
+		const id = `${activeRef.index}_${activeRef.item.label}`;
+		const position = $<Vector>("position").get(id)!;
+		const sprite = $<Sprite>("sprite").get(id)!;
+		const spriteSheet = spriteSheetMap.get(sprite.value.src)!;
 
-		// const entityRefs = items.filter(
-		// 	(ref) => ref.item.label === activeRef.item.label,
-		// );
-		// const instance =
-		// 	instances[entityRefs.findIndex((ref) => ref.item.isActive)];
+		const sceneProcess = sceneProcessMap.get(currentScene.data.name)!;
+		const ctx = viewport.ctx;
+		currentScene.process = (...args) => {
+			sceneProcess(...args);
 
-		// setActiveEntity(instance);
-		// const sprite = spritesSheetsMap.get(instance.animation.spriteSrc)!;
+			ctx.save();
+			ctx.globalAlpha = 0.75;
+			ctx.lineWidth = 1;
+			ctx.strokeStyle = "#6572f5";
+			ctx.strokeRect(
+				position.value.x - 0.5,
+				position.value.y - 0.5,
+				spriteSheet.frameWidth + 1,
+				spriteSheet.frameHeight + 1,
+			);
 
-		// const processProxy = sceneProcessMap.get(currentScene.data.name)!;
-		// const ctx = viewport.ctx;
-		// currentScene.process = (...args) => {
-		// 	processProxy(...args);
-
-		// 	ctx.save();
-		// 	ctx.globalAlpha = 0.75;
-		// 	ctx.lineWidth = 1;
-		// 	ctx.strokeStyle = "#6572f5";
-		// 	viewport.ctx.strokeRect(
-		// 		instance.position.x - 0.5,
-		// 		instance.position.y - 0.5,
-		// 		sprite.sheet.width / sprite.xFrames + 1,
-		// 		sprite.sheet.height / sprite.yFrames + 1,
-		// 	);
-
-		// 	ctx.fillStyle = "#ee459e";
-		// 	viewport.ctx.fillRect(
-		// 		instance.position.x - 1,
-		// 		instance.position.y - 1,
-		// 		2,
-		// 		2,
-		// 	);
-		// 	ctx.beginPath();
-		// 	ctx.fill();
-		// 	ctx.restore();
-		// };
+			ctx.fillStyle = "#ee459e";
+			ctx.fillRect(position.value.x - 1, position.value.y - 1, 2, 2);
+			ctx.beginPath();
+			ctx.fill();
+			ctx.restore();
+		};
 	};
 
 	onMount(() => {
@@ -194,29 +173,6 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 				<GraphBrowser graph={sceneGraph} seed={2802446152} />
 
 				<ItemList name="Entities" handler={selectEntity} items={entities} />
-
-				<Show when={activeEntity() !== null}>
-					<div class="entity-props">
-						<InputField
-							type="number"
-							name="x"
-							value={"FIXME"}
-							icon={LetterXIcon()}
-							onChange={(value) => {
-								// activeEntity()!.position.x = parseInt(value);
-							}}
-						></InputField>
-						<InputField
-							type="number"
-							name="y"
-							value={"FIXME"}
-							icon={LetterYIcon()}
-							onChange={(value) => {
-								// activeEntity()!.position.y = parseInt(value);
-							}}
-						></InputField>
-					</div>
-				</Show>
 			</div>
 			<div class="tool-bar-resize" onMouseDown={startResizing}></div>
 		</div>
