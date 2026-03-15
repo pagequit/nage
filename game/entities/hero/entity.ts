@@ -21,22 +21,22 @@ const process = defineEntity("hero", {
 });
 
 process((id, delta) => {
-	const position = $<Vector>("position").get(id)!;
-	const velocity = $<Vector>("velocity").get(id)!;
+	const position = $<Vector>("position").get(id)!.value;
+	const velocity = $<Vector>("velocity").get(id)!.value;
 
 	if (pointer.isDown) {
-		position.value.x = pointer.position.x;
-		position.value.y = pointer.position.y;
+		position.x = pointer.position.x;
+		position.y = pointer.position.y;
 	}
 
-	velocity.value.x -= keyboardInput.arrowLeft ? speed : 0;
-	velocity.value.x += keyboardInput.arrowRight ? speed : 0;
-	velocity.value.y -= keyboardInput.arrowUp ? speed : 0;
-	velocity.value.y += keyboardInput.arrowDown ? speed : 0;
+	velocity.x -= keyboardInput.arrowLeft ? speed : 0;
+	velocity.x += keyboardInput.arrowRight ? speed : 0;
+	velocity.y -= keyboardInput.arrowUp ? speed : 0;
+	velocity.y += keyboardInput.arrowDown ? speed : 0;
 
-	position.value.x = Math.round(velocity.value.x * delta + position.value.x);
-	position.value.y = Math.round(velocity.value.y * delta + position.value.y);
+	position.x = Math.round(velocity.x * delta + position.x);
+	position.y = Math.round(velocity.y * delta + position.y);
 
-	velocity.value.x = 0;
-	velocity.value.y = 0;
+	velocity.x = 0;
+	velocity.y = 0;
 });

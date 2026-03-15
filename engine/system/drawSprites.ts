@@ -27,13 +27,16 @@ export function drawSprites(ctx: CanvasRenderingContext2D): void {
 	for (const drawable of drawables.sort(
 		(a, b) => a.position.value.y - b.position.value.y,
 	)) {
+		const sprite = drawable.sprite.value;
+		const position = drawable.position.value;
+
 		drawSprite(
 			ctx,
-			spriteSheetMap.get(drawable.sprite.value.src)!,
-			drawable.sprite.value.xStart,
-			drawable.sprite.value.yStart,
-			drawable.position.value.x,
-			drawable.position.value.y,
+			spriteSheetMap.get(sprite.src)!,
+			sprite.xStart,
+			sprite.yStart,
+			position.x,
+			position.y,
 		);
 	}
 }
