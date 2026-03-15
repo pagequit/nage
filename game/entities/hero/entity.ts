@@ -1,3 +1,4 @@
+import { createCircle } from "#/engine/Circle.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { pointer } from "#/engine/Pointer.ts";
@@ -7,6 +8,10 @@ import {
 	createSpriteAnimation,
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
+import {
+	type Collider,
+	moveAndCollide,
+} from "#/engine/system/processPhysics.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
@@ -18,11 +23,13 @@ const process = defineEntity("hero", {
 	sprite: createSprite(idleSrc),
 	animation: createSpriteAnimation(500, 2),
 	velocity: createVector(),
+	collider: createCircle(createVector(), 8),
 });
 
 process((id, delta) => {
 	const position = $<Vector>("position").get(id)!.value;
 	const velocity = $<Vector>("velocity").get(id)!.value;
+	const collider = $<Collider>("collider").get(id)!.value;
 
 	if (pointer.isDown) {
 		position.x = pointer.position.x;
@@ -39,4 +46,7 @@ process((id, delta) => {
 
 	velocity.x = 0;
 	velocity.y = 0;
+
+	const collision = moveAndCollide(collider, velocity, delta);
+	console.log(collision);
 });

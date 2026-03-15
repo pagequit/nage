@@ -3,6 +3,7 @@ import { type Component, createEffect, createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
 import $, {
 	currentScene,
+	type SceneChange,
 	type SceneData,
 	sceneChangeSet,
 	sceneGraph,
@@ -121,6 +122,17 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 
 		document.addEventListener("mousemove", handleMouseMove);
 		document.addEventListener("mouseup", stopResizing);
+
+		if (location.hash) {
+			const callback: SceneChange = (sceneData) => {
+				const name = location.hash.substring(1);
+				if (sceneData.name !== name) {
+					setScene(name).catch(console.error);
+				}
+				sceneChangeSet.delete(callback);
+			};
+			sceneChangeSet.add(callback);
+		}
 	});
 
 	return (
