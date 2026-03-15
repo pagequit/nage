@@ -2,12 +2,12 @@ import $ from "#/engine/Scene.ts";
 import {
 	animateSprite,
 	type Sprite,
-	type SpritePlayback,
+	type SpriteAnimation,
 } from "#/engine/Sprite.ts";
 
 export function animateSprites(delta: number): void {
-	for (const [id, playback] of $<SpritePlayback>("playback").entries()) {
+	for (const [id, animation] of $<SpriteAnimation>("animation").entries()) {
 		const sprite = $<Sprite>("sprite").get(id)!;
-		animateSprite(sprite.value, playback.value, delta);
+		animateSprite(sprite.value, animation.value, delta);
 	}
 }

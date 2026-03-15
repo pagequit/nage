@@ -16,7 +16,7 @@ export type SpriteSheet = {
 	frameHeight: number;
 };
 
-export type SpritePlayback = {
+export type SpriteAnimation = {
 	xIndex: number;
 	yIndex: number;
 	frameTime: number;
@@ -71,10 +71,10 @@ export async function defineSpriteSheet(
 	return src;
 }
 
-export function createSpritePlayback(
+export function createSpriteAnimation(
 	frameTime: number,
 	yIndex: number,
-): SpritePlayback {
+): SpriteAnimation {
 	return {
 		xIndex: 0,
 		yIndex,
@@ -108,16 +108,16 @@ export function drawSprite(
 
 export function animateSprite(
 	sprite: Sprite,
-	playback: SpritePlayback,
+	animation: SpriteAnimation,
 	delta: number,
 ): void {
 	const sheet = spriteSheetMap.get(sprite.src)!;
-	if ((playback.frameDelta += delta) > playback.frameTime) {
-		playback.frameDelta = 0;
-		if ((playback.xIndex += 1) >= sheet.xFrames) {
-			playback.xIndex = 0;
+	if ((animation.frameDelta += delta) > animation.frameTime) {
+		animation.frameDelta = 0;
+		if ((animation.xIndex += 1) >= sheet.xFrames) {
+			animation.xIndex = 0;
 		}
 	}
 
-	sprite.xStart = playback.xIndex * sheet.frameWidth;
+	sprite.xStart = animation.xIndex * sheet.frameWidth;
 }

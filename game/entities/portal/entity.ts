@@ -1,7 +1,7 @@
 import { defineEntity } from "#/engine/Entity.ts";
 import {
 	createSprite,
-	createSpritePlayback,
+	createSpriteAnimation,
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
 import { createVector } from "#/engine/Vector.ts";
@@ -12,5 +12,5 @@ const portalSrc = await defineSpriteSheet(portal, 3, 1);
 defineEntity("portal", {
 	position: createVector(),
 	sprite: createSprite(portalSrc),
-	playback: createSpritePlayback(400, 0),
+	animation: createSpriteAnimation(400, 0),
 });

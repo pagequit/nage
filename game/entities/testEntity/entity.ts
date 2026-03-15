@@ -1,10 +1,10 @@
 import { defineEntity } from "#/engine/Entity.ts";
 import $ from "#/engine/Scene.ts";
 import {
-	createSpritePlayback,
+	createSpriteAnimation,
 	defineSpriteSheet,
 	type Sprite,
-	type SpritePlayback,
+	type SpriteAnimation,
 } from "#/engine/Sprite.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 import { viewport } from "#/engine/Viewport.ts";
@@ -33,17 +33,17 @@ const sprites = {
 	},
 };
 
-const playbacks = {
-	idle: createSpritePlayback(500, 2),
-	walk: createSpritePlayback(250, 2),
+const animations = {
+	idle: createSpriteAnimation(500, 2),
+	walk: createSpriteAnimation(250, 2),
 };
 
 const process = defineEntity<{
 	position: Vector;
-	playback: SpritePlayback;
-	playbacks: {
-		idle: SpritePlayback;
-		walk: SpritePlayback;
+	animation: SpriteAnimation;
+	animations: {
+		idle: SpriteAnimation;
+		walk: SpriteAnimation;
 	};
 	sprite: Sprite;
 	sprites: {
@@ -53,8 +53,8 @@ const process = defineEntity<{
 	stuff: number;
 }>("testEntity", {
 	position: createVector(),
-	playback: playbacks.idle,
-	playbacks: playbacks,
+	animation: animations.idle,
+	animations: animations,
 	sprite: sprites.idle,
 	sprites,
 	stuff: 1,
@@ -64,16 +64,16 @@ process((id, _delta) => {
 	const position = $<Vector>("position").get(id)!;
 	const stuff = $<number>("stuff").get(id)!;
 	const sprite = $<Sprite>("sprite").get(id)!;
-	const playback = $<SpritePlayback>("playback").get(id)!;
+	const animation = $<SpriteAnimation>("animation").get(id)!;
 
 	position.value.x += stuff.value * 0.5;
 	if (position.value.x > viewport.canvas.width - 16) {
 		stuff.value = -1;
-		playback.value = playbacks.walk;
+		animation.value = animations.walk;
 		sprite.value = sprites.walk;
 	} else if (position.value.x < 0) {
 		stuff.value = 1;
-		playback.value = playbacks.idle;
+		animation.value = animations.idle;
 		sprite.value = sprites.idle;
 	}
 });

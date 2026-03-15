@@ -4,7 +4,7 @@ import { pointer } from "#/engine/Pointer.ts";
 import $ from "#/engine/Scene.ts";
 import {
 	createSprite,
-	createSpritePlayback,
+	createSpriteAnimation,
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
@@ -16,7 +16,7 @@ const idleSrc = await defineSpriteSheet(charIdle, 2, 4);
 const process = defineEntity("hero", {
 	position: createVector(),
 	sprite: createSprite(idleSrc),
-	playback: createSpritePlayback(500, 2),
+	animation: createSpriteAnimation(500, 2),
 	velocity: createVector(),
 });
 
