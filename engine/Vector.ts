@@ -58,6 +58,15 @@ export function setDistanceNormal(normal: Vector, a: Vector, b: Vector): void {
 	}
 }
 
+export function setEdgeNormal(normal: Vector, a: Vector, b: Vector): void {
+	const nx = -(b.y - a.y);
+	const ny = b.x - a.x;
+	const inv = 1.0 / Math.sqrt(nx * nx + ny * ny);
+
+	normal.x = nx * inv;
+	normal.y = ny * inv;
+}
+
 export function getDotProduct(a: Vector, b: Vector): number {
 	return a.x * b.x + a.y * b.y;
 }
