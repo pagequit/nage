@@ -1,4 +1,4 @@
-import { createVector, setEdgeNormal, type Vector } from "#/engine/Vector.ts";
+import { createVector, setUnitNormal, type Vector } from "#/engine/Vector.ts";
 
 export type Polygon = {
 	position: Vector;
@@ -24,9 +24,9 @@ export function updateAxes({ points, axes }: Polygon): void {
 
 	for (let i = 0; i < cap; i++) {
 		const pj = points[i + 1];
-		setEdgeNormal(axes[i], pi, pj);
+		setUnitNormal(axes[i], pi, pj);
 		pi = pj;
 	}
 
-	setEdgeNormal(axes[cap], pi, p0);
+	setUnitNormal(axes[cap], pi, p0);
 }

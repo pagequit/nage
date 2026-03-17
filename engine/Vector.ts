@@ -47,24 +47,22 @@ export function getSquared(vector: Vector): number {
 	return vector.x * vector.x + vector.y * vector.y;
 }
 
-export function setDistanceNormal(normal: Vector, a: Vector, b: Vector): void {
+export function setUnit(unit: Vector, a: Vector, b: Vector): void {
 	const dx = a.x - b.x;
 	const dy = a.y - b.y;
-	const distance = Math.sqrt(dx * dx + dy * dy);
+	const inv = 1.0 / Math.sqrt(dx * dx + dy * dy);
 
-	if (distance > 0) {
-		normal.x = dx / distance;
-		normal.y = dy / distance;
-	}
+	unit.x = dx * inv;
+	unit.y = dy * inv;
 }
 
-export function setEdgeNormal(normal: Vector, a: Vector, b: Vector): void {
-	const nx = -(b.y - a.y);
+export function setUnitNormal(unit: Vector, a: Vector, b: Vector): void {
+	const nx = a.y - b.y;
 	const ny = b.x - a.x;
 	const inv = 1.0 / Math.sqrt(nx * nx + ny * ny);
 
-	normal.x = nx * inv;
-	normal.y = ny * inv;
+	unit.x = nx * inv;
+	unit.y = ny * inv;
 }
 
 export function getDotProduct(a: Vector, b: Vector): number {
@@ -81,13 +79,9 @@ export function scale(vector: Vector, scalar: number): void {
 }
 
 export function normalize(vector: Vector): void {
-	const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-
-	if (magnitude > 0) {
-		const scalar = 1 / magnitude;
-		vector.x *= scalar;
-		vector.y *= scalar;
-	}
+	const inv = 1.0 / Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+	vector.x *= inv;
+	vector.y *= inv;
 }
 
 export function isZero(vector: Vector): boolean {

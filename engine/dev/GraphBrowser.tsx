@@ -12,7 +12,7 @@ import {
 	createVector,
 	getDistance,
 	scale,
-	setDistanceNormal,
+	setUnit,
 	type Vector,
 } from "#/engine/Vector.ts";
 
@@ -104,7 +104,7 @@ function hookEdge<T extends PhysicsPartial>([a, b]: Edge<T>): void {
 	const stiffness = 0.05;
 
 	const direction = createVector();
-	setDistanceNormal(direction, a.position, b.position);
+	setUnit(direction, a.position, b.position);
 
 	const distance = getDistance(a.position, b.position);
 	const magnitude = (distance - restLength) * stiffness + Number.EPSILON;

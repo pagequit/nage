@@ -29,7 +29,6 @@ const process = defineEntity("hero", {
 process((id, delta) => {
 	const position = $<Vector>("position").get(id)!.value;
 	const velocity = $<Vector>("velocity").get(id)!.value;
-	const collider = $<Collider>("collider").get(id)!.value;
 
 	if (pointer.isDown) {
 		position.x = pointer.position.x;
@@ -47,6 +46,6 @@ process((id, delta) => {
 	velocity.x = 0;
 	velocity.y = 0;
 
-	const collision = moveAndCollide(collider, velocity, delta);
-	console.log(collision);
+	const collision = moveAndCollide(id, velocity, delta);
+	// console.log(collision);
 });
