@@ -3,7 +3,6 @@ import { listenPointer } from "#/engine/Pointer.ts";
 import { currentScene, setScene } from "#/engine/Scene.ts";
 import { animateSprites } from "#/engine/system/animateSprites.ts";
 import { drawSprites } from "#/engine/system/drawSprites.ts";
-import { processPhysics } from "#/engine/system/processPhysics.ts";
 import {
 	initViewport,
 	resetCtx,
@@ -19,8 +18,6 @@ function animate(timestamp: number): void {
 
 	resetCtx();
 	currentScene.process(viewport.ctx, delta);
-
-	processPhysics(viewport.ctx, delta);
 
 	animateSprites(delta);
 	drawSprites(viewport.ctx);

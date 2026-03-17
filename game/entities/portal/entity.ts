@@ -5,6 +5,7 @@ import {
 	createSpriteAnimation,
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
+import { createCollider } from "#/engine/system/processPhysics.ts";
 import { createVector } from "#/engine/Vector.ts";
 import portal from "#/game/assets/portal.png";
 
@@ -14,5 +15,5 @@ defineEntity("portal", {
 	position: createVector(),
 	sprite: createSprite(portalSrc),
 	animation: createSpriteAnimation(400, 0),
-	collider: createCircle(createVector(), 8),
+	collider: createCollider(0),
 });
