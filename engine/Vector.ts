@@ -14,14 +14,14 @@ export function copyVector(vector: Vector): Vector {
 	};
 }
 
-export function fromPolar(direction: number, magnitude: number): Vector {
+export function fromPolar(angle: number, magnitude: number): Vector {
 	return {
-		x: Math.cos(direction) * magnitude,
-		y: Math.sin(direction) * magnitude,
+		x: Math.cos(angle) * magnitude,
+		y: Math.sin(angle) * magnitude,
 	};
 }
 
-export function getDirection(vector: Vector): number {
+export function getAngle(vector: Vector): number {
 	return Math.atan2(vector.y, vector.x);
 }
 

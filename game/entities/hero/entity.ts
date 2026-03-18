@@ -9,10 +9,10 @@ import {
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
 import {
-	type Collider,
 	createCollider,
 	moveAndCollide,
-} from "#/engine/system/processPhysics.ts";
+	Shape,
+} from "#/engine/system/physics.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
@@ -24,13 +24,12 @@ const process = defineEntity("hero", {
 	sprite: createSprite(idleSrc),
 	animation: createSpriteAnimation(500, 2),
 	velocity: createVector(),
-	collider: createCollider(0),
+	collider: createCollider(Shape.Cirle, createCircle(createVector(), 8)),
 });
 
 process((id, delta) => {
 	const position = $<Vector>("position").get(id)!.value;
 	const velocity = $<Vector>("velocity").get(id)!.value;
-	const collider = $<Collider>("collider").get(id)!.value;
 
 	if (pointer.isDown) {
 		position.x = pointer.position.x;
@@ -48,6 +47,6 @@ process((id, delta) => {
 	velocity.x = 0;
 	velocity.y = 0;
 
-	moveAndCollide(id, velocity, delta);
-	console.log(collider.collision.id);
+	const collisions = moveAndCollide(id, velocity, delta);
+	console.log(collisions);
 });
