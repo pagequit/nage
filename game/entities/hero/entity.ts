@@ -9,7 +9,7 @@ import {
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
 import {
-	createCollider,
+	Collider,
 	moveAndCollide,
 	Shape,
 } from "#/engine/system/physics.ts";
@@ -24,7 +24,7 @@ const process = defineEntity("hero", {
 	sprite: createSprite(idleSrc),
 	animation: createSpriteAnimation(500, 2),
 	velocity: createVector(),
-	collider: createCollider(Shape.Cirle, createCircle(createVector(), 8)),
+	collider: new Collider(Shape.Cirle, createCircle(createVector(), 8)),
 });
 
 process((id, delta) => {

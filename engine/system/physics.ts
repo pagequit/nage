@@ -43,26 +43,9 @@ function createCollisionBuffer(size: number): CollisionBuffer {
 	};
 }
 
-function bufferNext(buffer: CollisionBuffer): Collision {
+function next(buffer: CollisionBuffer): Collision {
 	return buffer.pool[buffer.cursor++ & buffer.mask];
 }
-
-function bufferSliceReset(buffer: CollisionBuffer): void {
-	buffer.slice.length = 0;
-}
-
-function bufferSliceAdd(buffer: CollisionBuffer): Collision {
-	const next = bufferNext(buffer);
-	buffer.slice.push(next);
-
-	return next;
-}
-
-export type Collider = {
-	shape: ShapeType;
-	body: Circle | Rect | Polygon;
-	buffer: CollisionBuffer;
-};
 
 export type Collision = {
 	cid: string;
@@ -82,16 +65,25 @@ function createCollision(): Collision {
 	};
 }
 
-export function createCollider(
-	shape: ShapeType,
-	body: Circle | Rect | Polygon,
-	bufferSize: number = 8,
-): Collider {
-	return {
-		shape,
-		body,
-		buffer: createCollisionBuffer(bufferSize),
-	};
+export class Collider {
+	shapeType: ShapeType;
+	body: Circle | Rect | Polygon;
+	buffer: CollisionBuffer;
+
+	constructor(
+		shape: ShapeType,
+		body: Circle | Rect | Polygon,
+		bufferSize: number = 8,
+	) {
+		this.shapeType = shape;
+		this.body = body;
+		this.buffer = createCollisionBuffer(bufferSize);
+	}
+
+	// FIXME: sTruCtUrEd ClOnE >.<
+	collideWithCircle(collision: Collision, cid: string): void {
+		collision.cid = cid;
+	}
 }
 
 export function moveAndCollide(
@@ -100,16 +92,34 @@ export function moveAndCollide(
 	delta: number,
 ): Array<Collision> {
 	const colliders = $<Collider>("collider")!;
-	const self = colliders.get(id)!.value;
-	bufferSliceReset(self.buffer);
+	const self = colliders.get(id)!;
+	console.log(id, self);
+	const slice = self.value.buffer.slice;
+	slice.length = 0;
 
-	for (const [cid, _] of colliders.entries()) {
+	for (const [cid, collider] of colliders.entries()) {
 		if (cid === id) {
 			continue;
 		}
-		const collisoin = bufferSliceAdd(self.buffer);
-		collisoin.cid = cid;
+
+		const collision = next(self.value.buffer);
+		switch (collider.value.shapeType) {
+			case CIRCLE: {
+				// FIXME: sTruCtUrEd ClOnE >.<
+				self.value.collideWithCircle(collision, cid);
+				break;
+			}
+			case RECT: {
+				break;
+			}
+			case POLYGON: {
+				break;
+			}
+		}
+		if (collision.cid.length > 0) {
+			slice.push(collision);
+		}
 	}
 
-	return self.buffer.slice;
+	return slice;
 }
