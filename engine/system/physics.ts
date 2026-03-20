@@ -14,8 +14,6 @@ const CIRCLE = Shape.Cirle;
 const RECT = Shape.Rect;
 const POLYGON = Shape.Polygon;
 
-type ShapeType = Shape.Cirle | Shape.Rect | Shape.Polygon;
-
 type CollisionBuffer = {
 	size: number;
 	mask: number;
@@ -23,6 +21,64 @@ type CollisionBuffer = {
 	pool: Array<Collision>;
 	slice: Array<Collision>;
 };
+
+type Collide = (collision: Collision, cid: string) => void;
+
+export type Collider = {
+	shape: Shape;
+	body: Circle | Rect | Polygon;
+	buffer: CollisionBuffer;
+};
+
+export type Collision = {
+	cid: string;
+	normal: Vector;
+	position: Vector;
+	depth: 0;
+	angle: 0;
+};
+
+export function createCollider(
+	shape: Shape,
+	body: Circle | Rect | Polygon,
+	bufferSize: number = 8,
+): Collider {
+	return {
+		shape,
+		body,
+		buffer: createCollisionBuffer(bufferSize),
+	};
+}
+
+function collideWithCirle(collision: Collision, cid: string) {
+	collision.cid = cid;
+}
+
+function collideWithRect(collision: Collision, cid: string) {
+	collision.cid = cid;
+}
+
+function collideWithPolygon(collision: Collision, cid: string) {
+	collision.cid = cid;
+}
+
+const circleCollide: Array<Collide> = [
+	collideWithCirle,
+	collideWithRect,
+	collideWithPolygon,
+];
+
+const rectCollide: Array<Collide> = [
+	collideWithCirle,
+	collideWithRect,
+	collideWithPolygon,
+];
+
+const polygonCollide: Array<Collide> = [
+	collideWithCirle,
+	collideWithRect,
+	collideWithPolygon,
+];
 
 function createCollisionBuffer(size: number): CollisionBuffer {
 	if ((size & (size - 1)) !== 0) {
@@ -47,14 +103,6 @@ function next(buffer: CollisionBuffer): Collision {
 	return buffer.pool[buffer.cursor++ & buffer.mask];
 }
 
-export type Collision = {
-	cid: string;
-	normal: Vector;
-	position: Vector;
-	depth: 0;
-	angle: 0;
-};
-
 function createCollision(): Collision {
 	return {
 		cid: "",
@@ -65,36 +113,14 @@ function createCollision(): Collision {
 	};
 }
 
-export class Collider {
-	shapeType: ShapeType;
-	body: Circle | Rect | Polygon;
-	buffer: CollisionBuffer;
-
-	constructor(
-		shape: ShapeType,
-		body: Circle | Rect | Polygon,
-		bufferSize: number = 8,
-	) {
-		this.shapeType = shape;
-		this.body = body;
-		this.buffer = createCollisionBuffer(bufferSize);
-	}
-
-	// FIXME: sTruCtUrEd ClOnE >.<
-	collideWithCircle(collision: Collision, cid: string): void {
-		collision.cid = cid;
-	}
-}
-
 export function moveAndCollide(
 	id: string,
 	velocity: Vector,
 	delta: number,
 ): Array<Collision> {
 	const colliders = $<Collider>("collider")!;
-	const self = colliders.get(id)!;
-	console.log(id, self);
-	const slice = self.value.buffer.slice;
+	const self = colliders.get(id)!.value;
+	const slice = self.buffer.slice;
 	slice.length = 0;
 
 	for (const [cid, collider] of colliders.entries()) {
@@ -102,20 +128,23 @@ export function moveAndCollide(
 			continue;
 		}
 
-		const collision = next(self.value.buffer);
-		switch (collider.value.shapeType) {
+		const other = collider.value;
+		const collision = next(self.buffer);
+		switch (self.shape) {
 			case CIRCLE: {
-				// FIXME: sTruCtUrEd ClOnE >.<
-				self.value.collideWithCircle(collision, cid);
+				circleCollide[other.shape](collision, cid);
 				break;
 			}
 			case RECT: {
+				rectCollide[other.shape](collision, cid);
 				break;
 			}
 			case POLYGON: {
+				polygonCollide[other.shape](collision, cid);
 				break;
 			}
 		}
+
 		if (collision.cid.length > 0) {
 			slice.push(collision);
 		}
