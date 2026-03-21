@@ -8,17 +8,11 @@ export function createVector(x: number = 0, y: number = 0): Vector {
 }
 
 export function copyVector(vector: Vector): Vector {
-	return {
-		x: vector.x,
-		y: vector.y,
-	};
+	return { x: vector.x, y: vector.y };
 }
 
-export function fromPolar(angle: number, magnitude: number): Vector {
-	return {
-		x: Math.cos(angle) * magnitude,
-		y: Math.sin(angle) * magnitude,
-	};
+export function fromPolar(angle: number, mag: number): Vector {
+	return { x: Math.cos(angle) * mag, y: Math.sin(angle) * mag };
 }
 
 export function getAngle(vector: Vector): number {
@@ -36,33 +30,23 @@ export function getDistance(a: Vector, b: Vector): number {
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
-export function getDistanceSquared(a: Vector, b: Vector): number {
+export function getDistanceSqrt(a: Vector, b: Vector): number {
 	const dx = a.x - b.x;
 	const dy = a.y - b.y;
 
 	return dx * dx + dy * dy;
 }
 
-export function getSquared(vector: Vector): number {
+export function getSqrt(vector: Vector): number {
 	return vector.x * vector.x + vector.y * vector.y;
 }
 
 export function setUnit(unit: Vector, a: Vector, b: Vector): void {
-	const dx = a.x - b.x;
-	const dy = a.y - b.y;
-	const inv = 1.0 / Math.sqrt(dx * dx + dy * dy);
-
-	unit.x = dx * inv;
-	unit.y = dy * inv;
+	invScale(unit, a.x - b.x, a.y - b.y);
 }
 
 export function setUnitNormal(unit: Vector, a: Vector, b: Vector): void {
-	const nx = a.y - b.y;
-	const ny = b.x - a.x;
-	const inv = 1.0 / Math.sqrt(nx * nx + ny * ny);
-
-	unit.x = nx * inv;
-	unit.y = ny * inv;
+	invScale(unit, a.y - b.y, b.x - a.x);
 }
 
 export function getDotProduct(a: Vector, b: Vector): number {
@@ -79,17 +63,25 @@ export function scale(vector: Vector, scalar: number): void {
 }
 
 export function normalize(vector: Vector): void {
-	const inv = 1.0 / Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-	vector.x *= inv;
-	vector.y *= inv;
+	invScale(vector, vector.x, vector.y);
+}
+
+export function invScale(vector: Vector, x: number, y: number): void {
+	if (x === 0 && y === 0) {
+		return;
+	}
+
+	const inv = 1.0 / Math.sqrt(x * x + y * y);
+	vector.x = x * inv;
+	vector.y = y * inv;
 }
 
 export function isZero(vector: Vector): boolean {
 	return vector.x === 0 && vector.y === 0;
 }
 
-export function isBelowThreshold(vector: Vector, threshold: number): boolean {
-	return Math.abs(vector.x) < threshold && Math.abs(vector.y) < threshold;
+export function isBelowAbs(vector: Vector, abs: number): boolean {
+	return Math.abs(vector.x) < abs && Math.abs(vector.y) < abs;
 }
 
 export function equals(a: Vector, b: Vector): boolean {

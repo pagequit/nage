@@ -13,7 +13,12 @@ import {
 	moveAndCollide,
 	Shape,
 } from "#/engine/system/physics.ts";
-import { createVector, type Vector } from "#/engine/Vector.ts";
+import {
+	createVector,
+	normalize,
+	scale,
+	type Vector,
+} from "#/engine/Vector.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
 const speed = 0.05;
@@ -36,10 +41,12 @@ process((id, delta) => {
 		position.y = pointer.position.y;
 	}
 
-	velocity.x -= keyboardInput.arrowLeft ? speed : 0;
-	velocity.x += keyboardInput.arrowRight ? speed : 0;
-	velocity.y -= keyboardInput.arrowUp ? speed : 0;
-	velocity.y += keyboardInput.arrowDown ? speed : 0;
+	velocity.x -= keyboardInput.arrowLeft ? 1 : 0;
+	velocity.x += keyboardInput.arrowRight ? 1 : 0;
+	velocity.y -= keyboardInput.arrowUp ? 1 : 0;
+	velocity.y += keyboardInput.arrowDown ? 1 : 0;
+	normalize(velocity);
+	scale(velocity, speed);
 
 	position.x = Math.round(velocity.x * delta + position.x);
 	position.y = Math.round(velocity.y * delta + position.y);
