@@ -39,6 +39,7 @@ process((id, delta) => {
 	if (pointer.isDown) {
 		position.x = pointer.position.x;
 		position.y = pointer.position.y;
+		return;
 	}
 
 	velocity.x -= keyboardInput.arrowLeft ? 1 : 0;
@@ -48,8 +49,8 @@ process((id, delta) => {
 	normalize(velocity);
 	scale(velocity, speed);
 
-	position.x = Math.round(velocity.x * delta + position.x);
-	position.y = Math.round(velocity.y * delta + position.y);
+	position.x += velocity.x * delta;
+	position.y += velocity.y * delta;
 
 	velocity.x = 0;
 	velocity.y = 0;

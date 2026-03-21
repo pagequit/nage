@@ -99,8 +99,8 @@ export function drawSprite(
 		yStart,
 		sheet.frameWidth,
 		sheet.frameHeight,
-		x,
-		y,
+		Math.round(x),
+		Math.round(y),
 		width || sheet.frameWidth,
 		height || sheet.frameHeight,
 	);
