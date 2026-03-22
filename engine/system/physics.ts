@@ -1,6 +1,6 @@
 import type { Circle } from "#/engine/Circle.ts";
 import type { Polygon } from "#/engine/Polygon.ts";
-import type { Rect } from "#/engine/Rect.ts";
+import { createRect, type Rect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
 
@@ -27,6 +27,7 @@ type Collide = (collision: Collision, cid: string) => void;
 export type Collider = {
 	shape: Shape;
 	body: Circle | Rect | Polygon;
+	aabb: Rect;
 	buffer: CollisionBuffer;
 };
 
@@ -43,11 +44,43 @@ export function createCollider(
 	body: Circle | Rect | Polygon,
 	bufferSize: number = 8,
 ): Collider {
+	let aabb = createRect(createVector(), 0, 0);
+	switch (shape) {
+		case CIRCLE: {
+			const radius = (body as Circle).radius;
+			const size = radius * 2;
+
+			aabb.width = size;
+			aabb.height = size;
+			aabb.position.x = body.position.x - radius;
+			aabb.position.y = body.position.y - radius;
+			break;
+		}
+		case RECT: {
+			aabb = body as Rect;
+			break;
+		}
+		case POLYGON: {
+			break;
+		}
+	}
+
 	return {
 		shape,
 		body,
+		aabb,
 		buffer: createCollisionBuffer(bufferSize),
 	};
+}
+
+const infAABB = createRect(createVector(), 0, 0);
+function sweptAABB(self: Collider, other: Collider, velocity: Vector): void {
+	infAABB.position.x = other.aabb.position.x - self.aabb.width / 2;
+	infAABB.position.y = other.aabb.position.y - self.aabb.height / 2;
+	infAABB.width = other.aabb.width - self.aabb.width;
+	infAABB.height = other.aabb.height - self.aabb.height;
+
+	//
 }
 
 function collideWithCirle(collision: Collision, cid: string) {
@@ -119,7 +152,14 @@ export function moveAndCollide(
 	delta: number,
 ): Array<Collision> {
 	const colliders = $<Collider>("collider")!;
+	const positions = $<Vector>("position")!;
+
 	const self = colliders.get(id)!.value;
+	const pos = positions.get(id)!.value;
+
+	self.aabb.position.x = pos.x;
+	self.aabb.position.y = pos.y;
+
 	const slice = self.buffer.slice;
 	slice.length = 0;
 

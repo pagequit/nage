@@ -1,7 +1,7 @@
-import { createCircle } from "#/engine/Circle.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { pointer } from "#/engine/Pointer.ts";
+import { createRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import {
 	createSprite,
@@ -29,7 +29,7 @@ const process = defineEntity("hero", {
 	sprite: createSprite(idleSrc),
 	animation: createSpriteAnimation(500, 2),
 	velocity: createVector(),
-	collider: createCollider(Shape.Cirle, createCircle(createVector(), 8)),
+	collider: createCollider(Shape.Rect, createRect(createVector(), 16, 16)),
 });
 
 process((id, delta) => {
