@@ -38,10 +38,10 @@ export function strokeRect(
 	ctx.globalAlpha = alpha;
 	ctx.lineWidth = lineWidth;
 	ctx.strokeRect(
-		rect.position.x - 0.5,
-		rect.position.y - 0.5,
-		rect.width,
-		rect.height,
+		rect.position.x + 0.5,
+		rect.position.y + 0.5,
+		rect.width - 1,
+		rect.height - 1,
 	);
 	ctx.restore();
 }
@@ -53,13 +53,8 @@ export function fillRect(
 	alpha: number = 1.0,
 ): void {
 	ctx.save();
-	ctx.strokeStyle = color;
+	ctx.fillStyle = color;
 	ctx.globalAlpha = alpha;
-	ctx.fillRect(
-		rect.position.x - 0.5,
-		rect.position.y - 0.5,
-		rect.width,
-		rect.height,
-	);
+	ctx.fillRect(rect.position.x, rect.position.y, rect.width, rect.height);
 	ctx.restore();
 }

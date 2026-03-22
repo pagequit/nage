@@ -16,8 +16,8 @@
 			"name": "portal",
 			"init": {
 				"position": {
-					"x": 16,
-					"y": 16
+					"x": 24,
+					"y": 24
 				}
 			}
 		},

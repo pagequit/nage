@@ -1,5 +1,5 @@
 import { defineEntity } from "#/engine/Entity.ts";
-import { createRect } from "#/engine/Rect.ts";
+import { createRect, fillRect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import {
 	createSprite,
@@ -12,6 +12,7 @@ import {
 	Shape,
 } from "#/engine/system/physics.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
+import { viewport } from "#/engine/Viewport";
 import portal from "#/game/assets/portal.png";
 
 const portalSrc = await defineSpriteSheet(portal, 3, 1);
@@ -30,4 +31,7 @@ process((id, delta) => {
 
 	cPos.x = position.x;
 	cPos.y = position.y;
+
+	fillRect(viewport.ctx, collider.aabb, "orange");
+	strokeRect(viewport.ctx, collider.aabb, "red");
 });

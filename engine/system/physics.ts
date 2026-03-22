@@ -1,8 +1,9 @@
 import type { Circle } from "#/engine/Circle.ts";
 import type { Polygon } from "#/engine/Polygon.ts";
-import { createRect, type Rect } from "#/engine/Rect.ts";
+import { createRect, fillRect, type Rect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import { createVector, type Vector } from "#/engine/Vector.ts";
+import { viewport } from "#/engine/Viewport.ts";
 
 export enum Shape {
 	Cirle,
@@ -22,7 +23,13 @@ type CollisionBuffer = {
 	slice: Array<Collision>;
 };
 
-type Collide = (collision: Collision, cid: string) => void;
+type Collide = (
+	collision: Collision,
+	cid: string,
+	self: Collider,
+	velocity: Vector,
+	other: Collider,
+) => void;
 
 export type Collider = {
 	shape: Shape;
@@ -73,25 +80,77 @@ export function createCollider(
 	};
 }
 
-const infAABB = createRect(createVector(), 0, 0);
-function sweptAABB(self: Collider, other: Collider, velocity: Vector): void {
-	infAABB.position.x = other.aabb.position.x - self.aabb.width / 2;
-	infAABB.position.y = other.aabb.position.y - self.aabb.height / 2;
-	infAABB.width = other.aabb.width - self.aabb.width;
-	infAABB.height = other.aabb.height - self.aabb.height;
+const inflAABB = createRect(createVector(), 0, 0);
+function sweptAABB(
+	self: Collider,
+	velocity: Vector,
+	other: Collider,
+): null | number {
+	inflAABB.position.x = other.aabb.position.x - self.aabb.width;
+	inflAABB.position.y = other.aabb.position.y - self.aabb.height;
+	inflAABB.width = other.aabb.width + self.aabb.width;
+	inflAABB.height = other.aabb.height + self.aabb.height;
 
-	//
+	let txNear = (inflAABB.position.x - self.aabb.position.x) / velocity.x;
+	let txFar =
+		(inflAABB.position.x + inflAABB.width - self.aabb.position.x) / velocity.x;
+
+	let tyNear = (inflAABB.position.y - self.aabb.position.y) / velocity.y;
+	let tyFar =
+		(inflAABB.position.y + inflAABB.height - self.aabb.position.y) / velocity.y;
+
+	if (txNear > txFar) {
+		[txNear, txFar] = [txFar, txNear];
+	}
+	if (tyNear > tyFar) {
+		[tyNear, tyFar] = [tyFar, tyNear];
+	}
+
+	// no collision at all
+	if (txNear > tyFar || tyNear > txFar) {
+		return null;
+	}
+
+	const thNear = Math.max(txNear, tyNear);
+	const thFar = Math.min(txFar, tyFar);
+
+	// thMax < 0, collision is behind a frame
+	// thMin > 1, collision is ahead a frame
+	if (thFar < 0 || thNear > 1) {
+		return null;
+	}
+
+	return thNear;
 }
 
-function collideWithCirle(collision: Collision, cid: string) {
+function collideWithCirle(
+	collision: Collision,
+	cid: string,
+	self: Collider,
+	velocity: Vector,
+	other: Collider,
+) {
 	collision.cid = cid;
 }
 
-function collideWithRect(collision: Collision, cid: string) {
-	collision.cid = cid;
+function collideWithRect(
+	collision: Collision,
+	cid: string,
+	self: Collider,
+	velocity: Vector,
+	other: Collider,
+) {
+	const th = sweptAABB(self, velocity, other);
+	collision.cid = th !== null ? cid : "";
 }
 
-function collideWithPolygon(collision: Collision, cid: string) {
+function collideWithPolygon(
+	collision: Collision,
+	cid: string,
+	self: Collider,
+	velocity: Vector,
+	other: Collider,
+) {
 	collision.cid = cid;
 }
 
@@ -172,15 +231,15 @@ export function moveAndCollide(
 		const collision = next(self.buffer);
 		switch (self.shape) {
 			case CIRCLE: {
-				circleCollide[other.shape](collision, cid);
+				circleCollide[other.shape](collision, cid, self, velocity, other);
 				break;
 			}
 			case RECT: {
-				rectCollide[other.shape](collision, cid);
+				rectCollide[other.shape](collision, cid, self, velocity, other);
 				break;
 			}
 			case POLYGON: {
-				polygonCollide[other.shape](collision, cid);
+				polygonCollide[other.shape](collision, cid, self, velocity, other);
 				break;
 			}
 		}
