@@ -1,5 +1,6 @@
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
+import { lerp } from "#/engine/lib/lerp";
 import { pointer } from "#/engine/Pointer.ts";
 import { createRect, fillRect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
@@ -36,9 +37,13 @@ const process = defineEntity("hero", {
 });
 
 process((id, delta) => {
-	const position = $<Vector>("position").get(id)!.value;
+	const positions = $<Vector>("position");
+	const position = positions.get(id)!.value;
+
+	const colliders = $<Collider>("collider");
+	const collider = colliders.get(id)!.value;
+
 	const velocity = $<Vector>("velocity").get(id)!.value;
-	const collider = $<Collider>("collider").get(id)!.value;
 
 	if (pointer.isDown) {
 		position.x = pointer.position.x;
@@ -53,11 +58,21 @@ process((id, delta) => {
 	normalize(velocity);
 	scale(velocity, speed);
 
+	let cScale = 1;
 	const collisions = moveAndCollide(id, velocity, delta);
-	// console.log(collisions);
+	for (const collision of collisions) {
+		// const _collider = colliders.get(collision.cid)!.value;
+		// const _position = positions.get(collision.cid)!.value;
+		const time = collision.time;
+		if (time === -Infinity) {
+			break;
+		}
+		cScale = Math.min(0, time - 0.001);
+		console.log(cScale);
+	}
 
-	position.x += velocity.x * delta;
-	position.y += velocity.y * delta;
+	position.x += velocity.x * delta * cScale;
+	position.y += velocity.y * delta * cScale;
 
 	velocity.x = 0;
 	velocity.y = 0;

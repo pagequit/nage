@@ -2,7 +2,7 @@ import type { Circle } from "#/engine/Circle.ts";
 import type { Polygon } from "#/engine/Polygon.ts";
 import { createRect, fillRect, type Rect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
-import { createVector, type Vector } from "#/engine/Vector.ts";
+import { createVector, getDistance, type Vector } from "#/engine/Vector.ts";
 import { viewport } from "#/engine/Viewport.ts";
 
 export enum Shape {
@@ -42,8 +42,9 @@ export type Collision = {
 	cid: string;
 	normal: Vector;
 	position: Vector;
-	depth: 0;
-	angle: 0;
+	depth: number;
+	angle: number;
+	time: number;
 };
 
 export function createCollider(
@@ -114,13 +115,13 @@ function sweptAABB(
 	const thNear = Math.max(txNear, tyNear);
 	const thFar = Math.min(txFar, tyFar);
 
-	// thMax < 0, collision is behind a frame
-	// thMin > 1, collision is ahead a frame
+	// thFar < 0, collision is behind a frame
+	// thNear > 1, collision is ahead a frame
 	if (thFar < 0 || thNear > 1) {
 		return null;
 	}
 
-	return thNear;
+	return thNear; // -Infinity if velocity is 0
 }
 
 function collideWithCirle(
@@ -140,8 +141,10 @@ function collideWithRect(
 	velocity: Vector,
 	other: Collider,
 ) {
-	const th = sweptAABB(self, velocity, other);
-	collision.cid = th !== null ? cid : "";
+	collision.cid = cid;
+	const inflX = other.aabb.position.x - self.aabb.width;
+	const inflY = other.aabb.position.y - self.aabb.height;
+	collision.depth = getDistance(createVector(inflX, inflY), self.aabb.position);
 }
 
 function collideWithPolygon(
@@ -202,6 +205,7 @@ function createCollision(): Collision {
 		position: createVector(),
 		depth: 0,
 		angle: 0,
+		time: 0,
 	};
 }
 
@@ -228,7 +232,13 @@ export function moveAndCollide(
 		}
 
 		const other = collider.value;
+		const tHit = sweptAABB(self, velocity, other);
+		if (tHit === null) {
+			continue;
+		}
+
 		const collision = next(self.buffer);
+		collision.time = tHit;
 		switch (self.shape) {
 			case CIRCLE: {
 				circleCollide[other.shape](collision, cid, self, velocity, other);
