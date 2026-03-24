@@ -61,14 +61,7 @@ process((id, delta) => {
 	let cScale = 1;
 	const collisions = moveAndCollide(id, velocity, delta);
 	for (const collision of collisions) {
-		// const _collider = colliders.get(collision.cid)!.value;
-		// const _position = positions.get(collision.cid)!.value;
-		const time = collision.time;
-		if (time === -Infinity) {
-			break;
-		}
-		cScale = Math.min(0, time - 0.001);
-		console.log(cScale);
+		cScale = Math.min(0, collision.time - 0.001);
 	}
 
 	position.x += velocity.x * delta * cScale;

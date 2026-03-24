@@ -86,19 +86,25 @@ function sweptAABB(
 	self: Collider,
 	velocity: Vector,
 	other: Collider,
+	delta: number,
 ): null | number {
 	inflAABB.position.x = other.aabb.position.x - self.aabb.width;
 	inflAABB.position.y = other.aabb.position.y - self.aabb.height;
 	inflAABB.width = other.aabb.width + self.aabb.width;
 	inflAABB.height = other.aabb.height + self.aabb.height;
 
-	let txNear = (inflAABB.position.x - self.aabb.position.x) / velocity.x;
-	let txFar =
-		(inflAABB.position.x + inflAABB.width - self.aabb.position.x) / velocity.x;
+	const displacementX = velocity.x * delta;
+	const displacementY = velocity.y * delta;
 
-	let tyNear = (inflAABB.position.y - self.aabb.position.y) / velocity.y;
+	let txNear = (inflAABB.position.x - self.aabb.position.x) / displacementX;
+	let txFar =
+		(inflAABB.position.x + inflAABB.width - self.aabb.position.x) /
+		displacementX;
+
+	let tyNear = (inflAABB.position.y - self.aabb.position.y) / displacementY;
 	let tyFar =
-		(inflAABB.position.y + inflAABB.height - self.aabb.position.y) / velocity.y;
+		(inflAABB.position.y + inflAABB.height - self.aabb.position.y) /
+		displacementY;
 
 	if (txNear > txFar) {
 		[txNear, txFar] = [txFar, txNear];
@@ -121,7 +127,8 @@ function sweptAABB(
 		return null;
 	}
 
-	return thNear; // -Infinity if velocity is 0
+	// -Infinity if velocity is 0
+	return Math.max(0, thNear);
 }
 
 function collideWithCirle(
@@ -232,7 +239,7 @@ export function moveAndCollide(
 		}
 
 		const other = collider.value;
-		const tHit = sweptAABB(self, velocity, other);
+		const tHit = sweptAABB(self, velocity, other, delta);
 		if (tHit === null) {
 			continue;
 		}
