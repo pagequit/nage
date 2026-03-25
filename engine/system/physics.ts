@@ -2,7 +2,14 @@ import type { Circle } from "#/engine/Circle.ts";
 import type { Polygon } from "#/engine/Polygon.ts";
 import { createRect, fillRect, type Rect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
-import { createVector, getDistance, type Vector } from "#/engine/Vector.ts";
+import {
+	createVector,
+	getDistance,
+	getDotProduct,
+	invScale,
+	setUnitNormal,
+	type Vector,
+} from "#/engine/Vector.ts";
 import { viewport } from "#/engine/Viewport.ts";
 
 export enum Shape {
@@ -41,9 +48,6 @@ export type Collider = {
 export type Collision = {
 	cid: string;
 	normal: Vector;
-	position: Vector;
-	depth: number;
-	angle: number;
 	time: number;
 };
 
@@ -149,9 +153,15 @@ function collideWithRect(
 	other: Collider,
 ) {
 	collision.cid = cid;
-	const inflX = other.aabb.position.x - self.aabb.width;
-	const inflY = other.aabb.position.y - self.aabb.height;
-	collision.depth = getDistance(createVector(inflX, inflY), self.aabb.position);
+	const x = self.aabb.position.x - other.aabb.position.x;
+	const y = self.aabb.position.y - other.aabb.position.y;
+	if (Math.abs(x) > Math.abs(y)) {
+		collision.normal.y = 0;
+		collision.normal.x = x > 0 ? 1 : -1;
+	} else {
+		collision.normal.x = 0;
+		collision.normal.y = y > 0 ? 1 : -1;
+	}
 }
 
 function collideWithPolygon(
@@ -209,9 +219,6 @@ function createCollision(): Collision {
 	return {
 		cid: "",
 		normal: createVector(),
-		position: createVector(),
-		depth: 0,
-		angle: 0,
 		time: 0,
 	};
 }
@@ -267,4 +274,17 @@ export function moveAndCollide(
 	}
 
 	return slice;
+}
+
+export function moveAndSlide(
+	id: string,
+	velocity: Vector,
+	delta: number,
+): void {
+	const collisions = moveAndCollide(id, velocity, delta);
+	for (const collision of collisions) {
+		const dot = getDotProduct(velocity, collision.normal);
+		velocity.x -= collision.normal.x * dot;
+		velocity.y -= collision.normal.y * dot;
+	}
 }

@@ -14,10 +14,12 @@ import {
 	type Collision,
 	createCollider,
 	moveAndCollide,
+	moveAndSlide,
 	Shape,
 } from "#/engine/system/physics.ts";
 import {
 	createVector,
+	getDotProduct,
 	normalize,
 	scale,
 	type Vector,
@@ -55,24 +57,17 @@ process((id, delta) => {
 	velocity.x += keyboardInput.arrowRight ? 1 : 0;
 	velocity.y -= keyboardInput.arrowUp ? 1 : 0;
 	velocity.y += keyboardInput.arrowDown ? 1 : 0;
+
 	normalize(velocity);
 	scale(velocity, speed);
+	moveAndSlide(id, velocity, delta);
 
-	let cScale = 1;
-	const collisions = moveAndCollide(id, velocity, delta);
-	for (const collision of collisions) {
-		cScale = Math.min(0, collision.time - 0.001);
-	}
-
-	position.x += velocity.x * delta * cScale;
-	position.y += velocity.y * delta * cScale;
+	position.x += velocity.x * delta;
+	position.y += velocity.y * delta;
 
 	velocity.x = 0;
 	velocity.y = 0;
 
 	fillRect(viewport.ctx, collider.aabb, "orange");
 	strokeRect(viewport.ctx, collider.aabb, "red");
-	if (collisions.some((c: Collision) => c.cid.length > 0)) {
-		fillRect(viewport.ctx, collider.aabb, "red");
-	}
 });
