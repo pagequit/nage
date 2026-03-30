@@ -17,6 +17,15 @@
 			"init": {
 				"position": {
 					"x": 24,
+					"y": 41
+				}
+			}
+		},
+		{
+			"name": "portal",
+			"init": {
+				"position": {
+					"x": 24,
 					"y": 24
 				}
 			}

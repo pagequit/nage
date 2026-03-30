@@ -1,6 +1,5 @@
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
-import { lerp } from "#/engine/lib/lerp";
 import { pointer } from "#/engine/Pointer.ts";
 import { createRect, fillRect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
@@ -11,15 +10,12 @@ import {
 } from "#/engine/Sprite.ts";
 import {
 	type Collider,
-	type Collision,
 	createCollider,
-	moveAndCollide,
 	moveAndSlide,
 	Shape,
 } from "#/engine/system/physics.ts";
 import {
 	createVector,
-	getDotProduct,
 	normalize,
 	scale,
 	type Vector,

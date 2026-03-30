@@ -7,6 +7,7 @@ import {
 	getDistance,
 	getDotProduct,
 	invScale,
+	scale,
 	setUnitNormal,
 	type Vector,
 } from "#/engine/Vector.ts";
@@ -283,8 +284,17 @@ export function moveAndSlide(
 ): void {
 	const collisions = moveAndCollide(id, velocity, delta);
 	for (const collision of collisions) {
+		const time = collision.time;
+		if (time === -Infinity) {
+			continue; // TODO
+		}
 		const dot = getDotProduct(velocity, collision.normal);
-		velocity.x -= collision.normal.x * dot;
-		velocity.y -= collision.normal.y * dot;
+		const ts = Math.min(0, time - 0.001);
+		const tsx = velocity.x * ts;
+		const tsy = velocity.y * ts;
+		const rt = 1 - time;
+
+		velocity.x -= collision.normal.x * dot * rt + tsx;
+		velocity.y -= collision.normal.y * dot * rt + tsy;
 	}
 }
