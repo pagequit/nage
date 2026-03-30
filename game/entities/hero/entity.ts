@@ -1,7 +1,7 @@
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { pointer } from "#/engine/Pointer.ts";
-import { createRect, fillRect, strokeRect } from "#/engine/Rect.ts";
+import { createRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import {
 	createSprite,
@@ -9,7 +9,6 @@ import {
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
 import {
-	type Collider,
 	createCollider,
 	moveAndSlide,
 	Shape,
@@ -20,7 +19,6 @@ import {
 	scale,
 	type Vector,
 } from "#/engine/Vector.ts";
-import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
 const speed = 0.1;
@@ -35,12 +33,7 @@ const process = defineEntity("hero", {
 });
 
 process((id, delta) => {
-	const positions = $<Vector>("position");
-	const position = positions.get(id)!.value;
-
-	const colliders = $<Collider>("collider");
-	const collider = colliders.get(id)!.value;
-
+	const position = $<Vector>("position").get(id)!.value;
 	const velocity = $<Vector>("velocity").get(id)!.value;
 
 	if (pointer.isDown) {
@@ -63,7 +56,4 @@ process((id, delta) => {
 
 	velocity.x = 0;
 	velocity.y = 0;
-
-	fillRect(viewport.ctx, collider.aabb, "orange");
-	strokeRect(viewport.ctx, collider.aabb, "red");
 });

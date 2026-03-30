@@ -1,17 +1,8 @@
 import type { Circle } from "#/engine/Circle.ts";
 import type { Polygon } from "#/engine/Polygon.ts";
-import { createRect, fillRect, type Rect, strokeRect } from "#/engine/Rect.ts";
+import { createRect, type Rect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
-import {
-	createVector,
-	getDistance,
-	getDotProduct,
-	invScale,
-	scale,
-	setUnitNormal,
-	type Vector,
-} from "#/engine/Vector.ts";
-import { viewport } from "#/engine/Viewport.ts";
+import { createVector, getDotProduct, type Vector } from "#/engine/Vector.ts";
 
 export enum Shape {
 	Cirle,
