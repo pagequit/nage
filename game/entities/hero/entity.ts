@@ -23,7 +23,7 @@ import {
 import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
-const speed = 0.05;
+const speed = 0.1;
 const idleSrc = await defineSpriteSheet(charIdle, 2, 4);
 
 const process = defineEntity("hero", {

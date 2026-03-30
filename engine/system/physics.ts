@@ -74,6 +74,7 @@ export function createCollider(
 			break;
 		}
 		case POLYGON: {
+			// TODO
 			break;
 		}
 	}
@@ -144,6 +145,7 @@ function collideWithCirle(
 	other: Collider,
 ) {
 	collision.cid = cid;
+	// TODO
 }
 
 function collideWithRect(
@@ -173,6 +175,7 @@ function collideWithPolygon(
 	other: Collider,
 ) {
 	collision.cid = cid;
+	// TODO
 }
 
 const circleCollide: Array<Collide> = [
@@ -288,13 +291,14 @@ export function moveAndSlide(
 		if (time === -Infinity) {
 			continue; // TODO
 		}
-		const dot = getDotProduct(velocity, collision.normal);
-		const ts = Math.min(0, time - 0.001);
-		const tsx = velocity.x * ts;
-		const tsy = velocity.y * ts;
-		const rt = 1 - time;
 
-		velocity.x -= collision.normal.x * dot * rt + tsx;
-		velocity.y -= collision.normal.y * dot * rt + tsy;
+		const ts = Math.min(0, time - 0.001);
+		velocity.x += velocity.x * ts;
+		velocity.y += velocity.y * ts;
+
+		const dot = getDotProduct(velocity, collision.normal);
+		const rt = 1 - time + 0.001;
+		velocity.x -= collision.normal.x * dot * rt;
+		velocity.y -= collision.normal.y * dot * rt;
 	}
 }
