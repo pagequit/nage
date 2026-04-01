@@ -21,7 +21,7 @@ export function createSignal<T>(value: T): [() => T, (value: T) => void] {
 	return [getter, setter];
 }
 
-export function createEffect(callback: () => void) {
+export function createEffect(callback: () => void): void {
 	current = callback;
 	callback();
 	current = null;

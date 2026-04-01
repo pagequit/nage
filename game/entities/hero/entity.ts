@@ -2,7 +2,7 @@ import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { createEffect, createSignal } from "#/engine/lib/Signal.ts";
 import { pointer } from "#/engine/Pointer.ts";
-import { createRect } from "#/engine/Rect.ts";
+import { createRect, fillRect, strokeRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import {
 	createSprite,
@@ -10,6 +10,7 @@ import {
 	defineSpriteSheet,
 } from "#/engine/Sprite.ts";
 import {
+	type Collider,
 	createCollider,
 	moveAndSlide,
 	Shape,
@@ -20,6 +21,7 @@ import {
 	scale,
 	type Vector,
 } from "#/engine/Vector.ts";
+import { viewport } from "#/engine/Viewport.ts";
 import charIdle from "#/game/assets/char-idle.png";
 
 const [speed, setSpeed] = createSignal(0.1);
@@ -42,6 +44,7 @@ let onceGuard = true;
 process((id, delta) => {
 	const position = $<Vector>("position").get(id)!.value;
 	const velocity = $<Vector>("velocity").get(id)!.value;
+	const collider = $<Collider>("collider").get(id)!.value;
 
 	if (pointer.isDown) {
 		position.x = pointer.position.x;
@@ -70,4 +73,7 @@ process((id, delta) => {
 
 	velocity.x = 0;
 	velocity.y = 0;
+
+	fillRect(viewport.ctx, collider.aabb, "orange");
+	strokeRect(viewport.ctx, collider.aabb, "red");
 });

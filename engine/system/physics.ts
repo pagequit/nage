@@ -224,13 +224,7 @@ export function moveAndCollide(
 	delta: number,
 ): Array<Collision> {
 	const colliders = $<Collider>("collider")!;
-	const positions = $<Vector>("position")!;
-
 	const self = colliders.get(id)!.value;
-	const pos = positions.get(id)!.value;
-
-	self.aabb.position.x = pos.x;
-	self.aabb.position.y = pos.y;
 
 	const slice = self.buffer.slice;
 	slice.length = 0;
@@ -283,6 +277,7 @@ export function moveAndSlide(
 			continue; // TODO
 		}
 
+		// FIXME
 		// const ts = Math.min(0, time - 0.001);
 		// velocity.x += velocity.x * ts;
 		// velocity.y += velocity.y * ts;
