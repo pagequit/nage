@@ -283,9 +283,9 @@ export function moveAndSlide(
 			continue; // TODO
 		}
 
-		const ts = Math.min(0, time - 0.001);
-		velocity.x += velocity.x * ts;
-		velocity.y += velocity.y * ts;
+		// const ts = Math.min(0, time - 0.001);
+		// velocity.x += velocity.x * ts;
+		// velocity.y += velocity.y * ts;
 
 		const dot = getDotProduct(velocity, collision.normal);
 		const rt = 1 - time + 0.001;
