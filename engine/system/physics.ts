@@ -270,21 +270,42 @@ export function moveAndSlide(
 	velocity: Vector,
 	delta: number,
 ): void {
-	const collisions = moveAndCollide(id, velocity, delta);
-	for (const collision of collisions) {
-		const time = collision.time;
-		if (time === -Infinity) {
-			continue; // TODO
+	let timeLeft = 1;
+	const aabb = $<Collider>("collider").get(id)!.value.aabb;
+	const position = $<Vector>("position").get(id)!.value;
+
+	for (let i = 0; i < 4; i++) {
+		const collisions = moveAndCollide(id, velocity, delta);
+		if (collisions.length < 1) {
+			break;
 		}
 
-		// FIXME
-		// const ts = Math.min(0, time - 0.001);
-		// velocity.x += velocity.x * ts;
-		// velocity.y += velocity.y * ts;
+		let closest = collisions[0];
+		for (const collision of collisions) {
+			if (collision.time < closest.time) {
+				closest = collision;
+			}
+		}
 
-		const dot = getDotProduct(velocity, collision.normal);
-		const rt = 1 - time + 0.001;
-		velocity.x -= collision.normal.x * dot * rt;
-		velocity.y -= collision.normal.y * dot * rt;
+		const time = closest.time;
+		if (time === -Infinity) {
+			break; // TODO
+		}
+
+		const scale = Math.max(0, time - 0.001);
+		aabb.position.x += velocity.x * (delta * timeLeft) * scale;
+		aabb.position.y += velocity.y * (delta * timeLeft) * scale;
+
+		const dot = getDotProduct(velocity, closest.normal);
+		velocity.x -= closest.normal.x * dot;
+		velocity.y -= closest.normal.y * dot;
+
+		timeLeft *= 1 - time;
 	}
+
+	velocity.x *= timeLeft;
+	velocity.y *= timeLeft;
+
+	position.x = aabb.position.x;
+	position.y = aabb.position.y;
 }
