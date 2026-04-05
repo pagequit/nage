@@ -351,6 +351,10 @@ export function moveAndSlide(
 		}
 
 		const time = closest.time;
+		// if the collider overlap already
+		if (time === 0) {
+			break;
+		}
 
 		const scale = Math.max(0, time - 0.001);
 		position.x += velocity.x * delta * timeLeft * scale;
