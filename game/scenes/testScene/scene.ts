@@ -16,12 +16,10 @@ postProcess(() => {
 	console.log("post: ", data.name);
 });
 
-const cirle = createCircle(createVector(), 4);
+const cirle = createCircle(4);
 
 process((ctx, _delta) => {
 	if (!pointer.isDown) {
-		cirle.position.x = pointer.position.x;
-		cirle.position.y = pointer.position.y;
-		strokeCircle(ctx, cirle);
+		strokeCircle(ctx, cirle, pointer.position.x, pointer.position.y);
 	}
 });

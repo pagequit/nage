@@ -1,18 +1,12 @@
-import { copyVector, type Vector } from "#/engine/Vector.ts";
+import type { Vector } from "#/engine/Vector.ts";
 
 export type Rect = {
-	position: Vector;
 	width: number;
 	height: number;
 };
 
-export function createRect(
-	position: Vector,
-	width: number,
-	height: number,
-): Rect {
+export function createRect(width: number, height: number): Rect {
 	return {
-		position,
 		width,
 		height,
 	};
@@ -20,7 +14,6 @@ export function createRect(
 
 export function fromMinMax(min: Vector, max: Vector): Rect {
 	return {
-		position: copyVector(min),
 		width: max.x - min.x,
 		height: max.y - min.y,
 	};
@@ -29,6 +22,8 @@ export function fromMinMax(min: Vector, max: Vector): Rect {
 export function strokeRect(
 	ctx: CanvasRenderingContext2D,
 	rect: Rect,
+	x: number,
+	y: number,
 	color: string = "#fff",
 	alpha: number = 1.0,
 	lineWidth: number = 1,
@@ -37,24 +32,21 @@ export function strokeRect(
 	ctx.strokeStyle = color;
 	ctx.globalAlpha = alpha;
 	ctx.lineWidth = lineWidth;
-	ctx.strokeRect(
-		rect.position.x + 0.5,
-		rect.position.y + 0.5,
-		rect.width - 1,
-		rect.height - 1,
-	);
+	ctx.strokeRect(x + 0.5, y + 0.5, rect.width - 1, rect.height - 1);
 	ctx.restore();
 }
 
 export function fillRect(
 	ctx: CanvasRenderingContext2D,
 	rect: Rect,
+	x: number,
+	y: number,
 	color: string = "#fff",
 	alpha: number = 1.0,
 ): void {
 	ctx.save();
 	ctx.fillStyle = color;
 	ctx.globalAlpha = alpha;
-	ctx.fillRect(rect.position.x, rect.position.y, rect.width, rect.height);
+	ctx.fillRect(x, y, rect.width, rect.height);
 	ctx.restore();
 }

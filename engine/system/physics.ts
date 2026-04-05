@@ -1,6 +1,6 @@
 import type { Circle } from "#/engine/Circle.ts";
 import type { Polygon } from "#/engine/Polygon.ts";
-import { createRect, type Rect } from "#/engine/Rect.ts";
+import type { Rect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import { createVector, getDotProduct, type Vector } from "#/engine/Vector.ts";
 
@@ -25,16 +25,20 @@ type CollisionBuffer = {
 type Collide = (
 	collision: Collision,
 	cid: string,
-	self: Collider,
-	velocity: Vector,
-	other: Collider,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
 ) => void;
 
 export type Collider = {
 	shape: Shape;
 	body: Circle | Rect | Polygon;
-	aabb: Rect;
 	buffer: CollisionBuffer;
+	offset: Vector;
+	width: number;
+	height: number;
 };
 
 export type Collision = {
@@ -46,26 +50,37 @@ export type Collision = {
 export function createCollider(
 	shape: Shape,
 	body: Circle | Rect | Polygon,
+	offset?: Vector,
 	bufferSize: number = 8,
 ): Collider {
-	let aabb = createRect(createVector(), 0, 0);
+	let width = 0;
+	let height = 0;
+
 	switch (shape) {
 		case CIRCLE: {
 			const radius = (body as Circle).radius;
 			const size = radius * 2;
 
-			aabb.width = size;
-			aabb.height = size;
-			aabb.position.x = body.position.x - radius;
-			aabb.position.y = body.position.y - radius;
+			width = size;
+			height = size;
+			if (offset === undefined) {
+				offset = createVector();
+			}
 			break;
 		}
 		case RECT: {
-			aabb = body as Rect;
+			width = (body as Rect).width;
+			height = (body as Rect).height;
+			if (offset === undefined) {
+				offset = createVector(-(width / 2), -(height / 2));
+			}
 			break;
 		}
 		case POLYGON: {
 			// TODO
+			if (offset === undefined) {
+				offset = createVector();
+			}
 			break;
 		}
 	}
@@ -73,35 +88,40 @@ export function createCollider(
 	return {
 		shape,
 		body,
-		aabb,
 		buffer: createCollisionBuffer(bufferSize),
+		offset,
+		width,
+		height,
 	};
 }
 
-const inflAABB = createRect(createVector(), 0, 0);
+const inflAABB = {
+	x: 0,
+	y: 0,
+	width: 0,
+	height: 0,
+};
 function sweptAABB(
-	self: Collider,
-	velocity: Vector,
-	other: Collider,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
 	delta: number,
 ): null | number {
-	inflAABB.position.x = other.aabb.position.x - self.aabb.width;
-	inflAABB.position.y = other.aabb.position.y - self.aabb.height;
-	inflAABB.width = other.aabb.width + self.aabb.width;
-	inflAABB.height = other.aabb.height + self.aabb.height;
+	inflAABB.x = positionB.x - colliderA.width;
+	inflAABB.y = positionB.y - colliderA.height;
+	inflAABB.width = colliderB.width + colliderA.width;
+	inflAABB.height = colliderB.height + colliderA.height;
 
-	const displacementX = velocity.x * delta;
-	const displacementY = velocity.y * delta;
+	const disX = velocityA.x * delta;
+	const disY = velocityA.y * delta;
 
-	let txNear = (inflAABB.position.x - self.aabb.position.x) / displacementX;
-	let txFar =
-		(inflAABB.position.x + inflAABB.width - self.aabb.position.x) /
-		displacementX;
+	let txNear = (inflAABB.x - positionA.x) / disX;
+	let txFar = (inflAABB.x + inflAABB.width - positionA.x) / disX;
 
-	let tyNear = (inflAABB.position.y - self.aabb.position.y) / displacementY;
-	let tyFar =
-		(inflAABB.position.y + inflAABB.height - self.aabb.position.y) /
-		displacementY;
+	let tyNear = (inflAABB.y - positionA.y) / disY;
+	let tyFar = (inflAABB.y + inflAABB.height - positionA.y) / disY;
 
 	if (txNear > txFar) {
 		[txNear, txFar] = [txFar, txNear];
@@ -131,9 +151,11 @@ function sweptAABB(
 function collideWithCirle(
 	collision: Collision,
 	cid: string,
-	self: Collider,
-	velocity: Vector,
-	other: Collider,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
 ) {
 	collision.cid = cid;
 	// TODO
@@ -142,13 +164,15 @@ function collideWithCirle(
 function collideWithRect(
 	collision: Collision,
 	cid: string,
-	self: Collider,
-	velocity: Vector,
-	other: Collider,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
 ) {
 	collision.cid = cid;
-	const x = self.aabb.position.x - other.aabb.position.x;
-	const y = self.aabb.position.y - other.aabb.position.y;
+	const x = positionA.x - positionB.x;
+	const y = positionA.y - positionB.y;
 	if (Math.abs(x) > Math.abs(y)) {
 		collision.normal.y = 0;
 		collision.normal.x = x > 0 ? 1 : -1;
@@ -161,9 +185,11 @@ function collideWithRect(
 function collideWithPolygon(
 	collision: Collision,
 	cid: string,
-	self: Collider,
-	velocity: Vector,
-	other: Collider,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
 ) {
 	collision.cid = cid;
 	// TODO
@@ -224,9 +250,11 @@ export function moveAndCollide(
 	delta: number,
 ): Array<Collision> {
 	const colliders = $<Collider>("collider")!;
-	const self = colliders.get(id)!.value;
+	const positions = $<Vector>("position")!;
+	const selfColl = colliders.get(id)!.value;
+	const selfPos = positions.get(id)!.value;
 
-	const slice = self.buffer.slice;
+	const slice = selfColl.buffer.slice;
 	slice.length = 0;
 
 	for (const [cid, collider] of colliders.entries()) {
@@ -234,25 +262,57 @@ export function moveAndCollide(
 			continue;
 		}
 
-		const other = collider.value;
-		const tHit = sweptAABB(self, velocity, other, delta);
+		const otherColl = collider.value;
+		const otherPos = positions.get(cid)!.value;
+		const tHit = sweptAABB(
+			selfColl,
+			selfPos,
+			velocity,
+			otherColl,
+			otherPos,
+			delta,
+		);
 		if (tHit === null) {
 			continue;
 		}
 
-		const collision = next(self.buffer);
+		const collision = next(selfColl.buffer);
 		collision.time = tHit;
-		switch (self.shape) {
+		switch (selfColl.shape) {
 			case CIRCLE: {
-				circleCollide[other.shape](collision, cid, self, velocity, other);
+				circleCollide[otherColl.shape](
+					collision,
+					cid,
+					selfColl,
+					selfPos,
+					velocity,
+					otherColl,
+					otherPos,
+				);
 				break;
 			}
 			case RECT: {
-				rectCollide[other.shape](collision, cid, self, velocity, other);
+				rectCollide[otherColl.shape](
+					collision,
+					cid,
+					selfColl,
+					selfPos,
+					velocity,
+					otherColl,
+					otherPos,
+				);
 				break;
 			}
 			case POLYGON: {
-				polygonCollide[other.shape](collision, cid, self, velocity, other);
+				polygonCollide[otherColl.shape](
+					collision,
+					cid,
+					selfColl,
+					selfPos,
+					velocity,
+					otherColl,
+					otherPos,
+				);
 				break;
 			}
 		}
@@ -271,7 +331,6 @@ export function moveAndSlide(
 	delta: number,
 ): void {
 	let timeLeft = 1;
-	const aabb = $<Collider>("collider").get(id)!.value.aabb;
 	const position = $<Vector>("position").get(id)!.value;
 
 	for (let i = 0; i < 4; i++) {
@@ -288,13 +347,10 @@ export function moveAndSlide(
 		}
 
 		const time = closest.time;
-		if (time === -Infinity) {
-			break; // TODO
-		}
 
 		const scale = Math.max(0, time - 0.001);
-		aabb.position.x += velocity.x * (delta * timeLeft) * scale;
-		aabb.position.y += velocity.y * (delta * timeLeft) * scale;
+		position.x += velocity.x * delta * timeLeft * scale;
+		position.y += velocity.y * delta * timeLeft * scale;
 
 		const dot = getDotProduct(velocity, closest.normal);
 		velocity.x -= closest.normal.x * dot;
@@ -305,7 +361,4 @@ export function moveAndSlide(
 
 	velocity.x *= timeLeft;
 	velocity.y *= timeLeft;
-
-	position.x = aabb.position.x;
-	position.y = aabb.position.y;
 }

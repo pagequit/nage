@@ -100,16 +100,11 @@ const DevTools: Component<{ gameContainer: HTMLElement }> = ({
 			ctx.lineWidth = 1;
 			ctx.strokeStyle = "#6572f5";
 			ctx.strokeRect(
-				position.value.x - 0.5,
-				position.value.y - 0.5,
+				position.value.x - 0.5 + sprite.value.offset.x,
+				position.value.y - 0.5 + sprite.value.offset.y,
 				spriteSheet.frameWidth + 1,
 				spriteSheet.frameHeight + 1,
 			);
-
-			ctx.fillStyle = "#ee459e";
-			ctx.fillRect(position.value.x - 1, position.value.y - 1, 2, 2);
-			ctx.beginPath();
-			ctx.fill();
 			ctx.restore();
 		};
 	};

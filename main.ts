@@ -9,18 +9,36 @@ import {
 	resizeCanvas,
 	viewport,
 } from "#/engine/Viewport.ts";
+import type { Sprite } from "./engine/Sprite";
 import type { Collider } from "./engine/system/physics";
 import type { Vector } from "./engine/Vector";
 
-function updateAABBs() {
-	const colliders = $<Collider>("collider");
+function debug(ctx: CanvasRenderingContext2D) {
 	const positions = $<Vector>("position");
+	const colliders = $<Collider>("collider");
+	const sprites = $<Sprite>("sprite");
 
 	for (const [id, collider] of colliders.entries()) {
-		const position = positions.get(id)!.value;
-		const aabb = collider.value.aabb;
-		aabb.position.x = position.x;
-		aabb.position.y = position.y;
+		const sprite = sprites.get(id)!.value;
+		const pos = positions.get(id)!.value;
+		const col = collider.value;
+
+		ctx.beginPath();
+		ctx.fillStyle = "#ee459e";
+		ctx.strokeStyle = "#ee459e";
+		ctx.strokeRect(
+			pos.x + col.offset.x + 0.5,
+			pos.y + col.offset.y + 0.5,
+			col.width - 1,
+			col.height - 1,
+		);
+		ctx.fillRect(pos.x - 1, pos.y - 1, 2, 2);
+		ctx.fillRect(
+			pos.x - 1 + sprite.offset.x,
+			pos.y - 1 + sprite.offset.y,
+			2,
+			2,
+		);
 	}
 }
 
@@ -32,12 +50,12 @@ function animate(timestamp: number): void {
 
 	resetCtx();
 
-	updateAABBs();
-
 	currentScene.process(viewport.ctx, delta);
 
 	animateSprites(delta);
 	drawSprites(viewport.ctx);
+
+	debug(viewport.ctx);
 
 	requestAnimationFrame(animate);
 }

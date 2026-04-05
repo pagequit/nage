@@ -23,6 +23,7 @@ const sprites = {
 		yStart: 0,
 		width: 16,
 		height: 16,
+		offset: createVector(-8, -8),
 	},
 	walk: {
 		src: srcs.walk,
@@ -30,6 +31,7 @@ const sprites = {
 		yStart: 0,
 		width: 16,
 		height: 16,
+		offset: createVector(-8, -8),
 	},
 };
 
@@ -37,6 +39,8 @@ const animations = {
 	idle: createSpriteAnimation(500, 2),
 	walk: createSpriteAnimation(250, 2),
 };
+
+const position = createVector();
 
 const process = defineEntity<{
 	position: Vector;
@@ -52,7 +56,7 @@ const process = defineEntity<{
 	};
 	stuff: number;
 }>("testEntity", {
-	position: createVector(),
+	position,
 	animation: animations.idle,
 	animations: animations,
 	sprite: sprites.idle,

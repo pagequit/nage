@@ -35,8 +35,8 @@ export function drawSprites(ctx: CanvasRenderingContext2D): void {
 			spriteSheetMap.get(sprite.src)!,
 			sprite.xStart,
 			sprite.yStart,
-			position.x,
-			position.y,
+			position.x + sprite.offset.x,
+			position.y + sprite.offset.y,
 		);
 	}
 }

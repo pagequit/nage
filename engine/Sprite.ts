@@ -1,4 +1,5 @@
 import { loadImage } from "#/engine/lib/loadImage.ts";
+import { createVector, type Vector } from "#/engine/Vector.ts";
 
 export type Sprite = {
 	src: string;
@@ -6,6 +7,7 @@ export type Sprite = {
 	yStart: number;
 	width: number;
 	height: number;
+	offset: Vector;
 };
 
 export type SpriteSheet = {
@@ -44,6 +46,7 @@ export function createSpriteSheet(
 
 export function createSprite(
 	src: string,
+	offset: Vector = createVector(),
 	xStartFrame: number = 0,
 	yStartFrame: number = 0,
 ): Sprite {
@@ -55,6 +58,7 @@ export function createSprite(
 		yStart: yStartFrame * spriteSheet.frameHeight,
 		width: spriteSheet.frameWidth,
 		height: spriteSheet.frameHeight,
+		offset,
 	};
 }
 
