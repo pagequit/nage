@@ -1,8 +1,8 @@
+import { createCircle } from "#/engine/Circle.ts";
 import { defineEntity } from "#/engine/Entity.ts";
 import { keyboardInput } from "#/engine/Keyboard.ts";
 import { createEffect, createSignal } from "#/engine/lib/Signal.ts";
 import { pointer } from "#/engine/Pointer.ts";
-import { createRect } from "#/engine/Rect.ts";
 import $ from "#/engine/Scene.ts";
 import {
 	createSprite,
@@ -30,7 +30,7 @@ const process = defineEntity("hero", {
 	sprite: createSprite(idleSrc, createVector(-8, -8)),
 	animation: createSpriteAnimation(500, 2),
 	velocity: createVector(),
-	collider: createCollider(Shape.Rect, createRect(24, 16)),
+	collider: createCollider(Shape.Circle, createCircle(8)),
 });
 
 createEffect(() => {

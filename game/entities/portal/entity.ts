@@ -1,5 +1,5 @@
+import { createCircle } from "#/engine/Circle.ts";
 import { defineEntity } from "#/engine/Entity.ts";
-import { createRect } from "#/engine/Rect.ts";
 import {
 	createSprite,
 	createSpriteAnimation,
@@ -16,5 +16,5 @@ defineEntity("portal", {
 	position,
 	sprite: createSprite(portalSrc, createVector(-8, -8)),
 	animation: createSpriteAnimation(400, 0),
-	collider: createCollider(Shape.Rect, createRect(16, 16)),
+	collider: createCollider(Shape.Circle, createCircle(8)),
 });

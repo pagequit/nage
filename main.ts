@@ -39,6 +39,13 @@ function debug(ctx: CanvasRenderingContext2D) {
 			2,
 			2,
 		);
+
+		if (collider.value.shape === 0) {
+			// @ts-ignore
+			ctx.arc(pos.x, pos.y, collider.value.body.radius, 0, 2 * Math.PI);
+			ctx.strokeStyle = "white";
+			ctx.stroke();
+		}
 	}
 }
 

@@ -5,12 +5,12 @@ import $ from "#/engine/Scene.ts";
 import { createVector, getDotProduct, type Vector } from "#/engine/Vector.ts";
 
 export enum Shape {
-	Cirle,
+	Circle,
 	Rect,
 	Polygon,
 }
 
-const CIRCLE = Shape.Cirle;
+const CIRCLE = Shape.Circle;
 const RECT = Shape.Rect;
 const POLYGON = Shape.Polygon;
 
@@ -64,7 +64,7 @@ export function createCollider(
 			width = size;
 			height = size;
 			if (offset === undefined) {
-				offset = createVector();
+				offset = createVector(-radius, -radius);
 			}
 			break;
 		}
