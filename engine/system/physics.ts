@@ -102,6 +102,7 @@ const inflAABB = {
 	height: 0,
 };
 function sweptAABB(
+	collision: Collision,
 	colliderA: Collider,
 	positionA: Vector,
 	velocityA: Vector,
@@ -109,19 +110,24 @@ function sweptAABB(
 	positionB: Vector,
 	delta: number,
 ): null | number {
-	inflAABB.x = positionB.x - colliderA.width;
-	inflAABB.y = positionB.y - colliderA.height;
+	const ax = positionA.x + colliderA.offset.x;
+	const ay = positionA.y + colliderA.offset.y;
+	const bx = positionB.x + colliderB.offset.x;
+	const by = positionB.y + colliderB.offset.y;
+
+	inflAABB.x = bx - colliderA.width;
+	inflAABB.y = by - colliderA.height;
 	inflAABB.width = colliderB.width + colliderA.width;
 	inflAABB.height = colliderB.height + colliderA.height;
 
 	const disX = velocityA.x * delta;
 	const disY = velocityA.y * delta;
 
-	let txNear = (inflAABB.x - positionA.x) / disX;
-	let txFar = (inflAABB.x + inflAABB.width - positionA.x) / disX;
+	let txNear = (inflAABB.x - ax) / disX;
+	let txFar = (inflAABB.x + inflAABB.width - ax) / disX;
 
-	let tyNear = (inflAABB.y - positionA.y) / disY;
-	let tyFar = (inflAABB.y + inflAABB.height - positionA.y) / disY;
+	let tyNear = (inflAABB.y - ay) / disY;
+	let tyFar = (inflAABB.y + inflAABB.height - ay) / disY;
 
 	if (txNear > txFar) {
 		[txNear, txFar] = [txFar, txNear];
@@ -144,8 +150,19 @@ function sweptAABB(
 		return null;
 	}
 
-	// -Infinity if velocity is 0
-	return Math.max(0, thNear);
+	collision.normal.x = 0;
+	collision.normal.y = 0;
+	if (txNear > tyNear) {
+		collision.normal.x = disX > 0 ? -1 : 1;
+	} else {
+		collision.normal.y = disY > 0 ? -1 : 1;
+	}
+
+	// thNear == -Infinity if velocity is 0
+	const time = Math.max(0, thNear);
+	collision.time = time;
+
+	return time;
 }
 
 function collideWithCirle(
@@ -156,10 +173,7 @@ function collideWithCirle(
 	velocityA: Vector,
 	colliderB: Collider,
 	positionB: Vector,
-) {
-	collision.cid = cid;
-	// TODO
-}
+) {}
 
 function collideWithRect(
 	collision: Collision,
@@ -169,18 +183,7 @@ function collideWithRect(
 	velocityA: Vector,
 	colliderB: Collider,
 	positionB: Vector,
-) {
-	collision.cid = cid;
-	const x = positionA.x - positionB.x;
-	const y = positionA.y - positionB.y;
-	if (Math.abs(x) > Math.abs(y)) {
-		collision.normal.y = 0;
-		collision.normal.x = x > 0 ? 1 : -1;
-	} else {
-		collision.normal.x = 0;
-		collision.normal.y = y > 0 ? 1 : -1;
-	}
-}
+) {}
 
 function collideWithPolygon(
 	collision: Collision,
@@ -190,10 +193,7 @@ function collideWithPolygon(
 	velocityA: Vector,
 	colliderB: Collider,
 	positionB: Vector,
-) {
-	collision.cid = cid;
-	// TODO
-}
+) {}
 
 const circleCollide: Array<Collide> = [
 	collideWithCirle,
@@ -264,7 +264,10 @@ export function moveAndCollide(
 
 		const otherColl = collider.value;
 		const otherPos = positions.get(cid)!.value;
+
+		const collision = next(selfColl.buffer);
 		const tHit = sweptAABB(
+			collision,
 			selfColl,
 			selfPos,
 			velocity,
@@ -272,12 +275,13 @@ export function moveAndCollide(
 			otherPos,
 			delta,
 		);
+
 		if (tHit === null) {
+			collision.cid = "";
 			continue;
 		}
+		collision.cid = cid;
 
-		const collision = next(selfColl.buffer);
-		collision.time = tHit;
 		switch (selfColl.shape) {
 			case CIRCLE: {
 				circleCollide[otherColl.shape](
