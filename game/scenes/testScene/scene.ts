@@ -1,7 +1,6 @@
 import { createCircle, strokeCircle } from "#/engine/Circle.ts";
 import { pointer } from "#/engine/Pointer.ts";
 import { defineScene } from "#/engine/Scene.ts";
-import { createVector } from "#/engine/Vector";
 import data from "./data.json";
 
 const { process, preProcess, postProcess, linkScenes } = defineScene(data);

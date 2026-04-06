@@ -165,7 +165,7 @@ function sweptAABB(
 	return time;
 }
 
-function collideWithCircle(
+function circleOnCircle(
 	collision: Collision,
 	colliderA: Collider,
 	positionA: Vector,
@@ -195,11 +195,13 @@ function collideWithCircle(
 	let disc = b * b - 4 * a * c;
 	if (disc >= 0) {
 		disc = Math.sqrt(disc);
+
 		const time = (-b - disc) / (2 * a);
 		if (time >= 0 && time <= 1) {
 			const nx = dx + disX * time;
 			const ny = dy + disY * time;
 			const inv = 1.0 / Math.sqrt(nx * nx + ny * ny);
+
 			collision.normal.x = nx * inv;
 			collision.normal.y = ny * inv;
 			collision.time = time;
@@ -214,7 +216,7 @@ function collideWithCircle(
 	collision.normal.y = 0;
 }
 
-function collideWithRect(
+function circleOnRect(
 	collision: Collision,
 	colliderA: Collider,
 	positionA: Vector,
@@ -224,7 +226,67 @@ function collideWithRect(
 	delta: number,
 ) {}
 
-function collideWithPolygon(
+function circleOnPolygon(
+	collision: Collision,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
+	delta: number,
+) {}
+
+function rectOnCircle(
+	collision: Collision,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
+	delta: number,
+) {}
+
+function rectOnRect(
+	collision: Collision,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
+	delta: number,
+) {}
+
+function rectOnPolygon(
+	collision: Collision,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
+	delta: number,
+) {}
+
+function polygonOnCircle(
+	collision: Collision,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
+	delta: number,
+) {}
+
+function polygonOnRect(
+	collision: Collision,
+	colliderA: Collider,
+	positionA: Vector,
+	velocityA: Vector,
+	colliderB: Collider,
+	positionB: Vector,
+	delta: number,
+) {}
+
+function polygonOnPolygon(
 	collision: Collision,
 	colliderA: Collider,
 	positionA: Vector,
@@ -235,21 +297,17 @@ function collideWithPolygon(
 ) {}
 
 const circleCollide: Array<Collide> = [
-	collideWithCircle,
-	collideWithRect,
-	collideWithPolygon,
+	circleOnCircle,
+	circleOnRect,
+	circleOnPolygon,
 ];
 
-const rectCollide: Array<Collide> = [
-	collideWithCircle,
-	collideWithRect,
-	collideWithPolygon,
-];
+const rectCollide: Array<Collide> = [rectOnCircle, rectOnRect, rectOnPolygon];
 
 const polygonCollide: Array<Collide> = [
-	collideWithCircle,
-	collideWithRect,
-	collideWithPolygon,
+	polygonOnCircle,
+	polygonOnRect,
+	polygonOnPolygon,
 ];
 
 function createCollisionBuffer(size: number): CollisionBuffer {
