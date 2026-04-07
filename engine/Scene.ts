@@ -6,7 +6,7 @@ import {
 } from "#/engine/Entity.ts";
 import { type Graph, getNeighbours } from "#/engine/Graph.ts";
 import { useWithAsyncCache } from "#/engine/lib/cache.ts";
-import MapProxy from "#/engine/lib/MapProxy.ts";
+import MapArray from "#/engine/lib/MapArray.ts";
 
 export type Process = (ctx: CanvasRenderingContext2D, delta: number) => void;
 export type PreProcess = () => void;
@@ -24,7 +24,7 @@ export type SceneData = {
 	entities: Array<EntityData<unknown>>;
 };
 
-export type ComponentsMap = Map<string, MapProxy<string, unknown>>;
+export type ComponentsMap = Map<string, MapArray<string, unknown>>;
 
 export type Scene = {
 	data: SceneData;
@@ -113,7 +113,7 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 	const localEntityProcessMap = new Map<string, EntityProcess>();
 	sceneEntityProcessMap.set(name, localEntityProcessMap);
 
-	const componentsMap = new Map<string, MapProxy<string, unknown>>();
+	const componentsMap = new Map<string, MapArray<string, unknown>>();
 	sceneComponentsMap.set(name, componentsMap);
 
 	await Promise.all(
@@ -136,9 +136,9 @@ const [loadScene, sceneCache] = useWithAsyncCache(async (name: string) => {
 						),
 					);
 					if (componentsMap.has(key)) {
-						componentsMap.get(key)!.map.set(id, boxedValue);
+						componentsMap.get(key)!.set(id, boxedValue);
 					} else {
-						componentsMap.set(key, new MapProxy([[id, boxedValue]]));
+						componentsMap.set(key, new MapArray([[id, boxedValue]]));
 					}
 				}
 			},
@@ -179,6 +179,6 @@ export async function setScene(name: string): Promise<void> {
 	}
 }
 
-export default function <T>(name: string): MapProxy<string, T> {
-	return currentScene.components.get(name) as MapProxy<string, T>;
+export default function <T>(name: string): MapArray<string, T> {
+	return currentScene.components.get(name) as MapArray<string, T>;
 }

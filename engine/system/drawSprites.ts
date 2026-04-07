@@ -8,13 +8,13 @@ sceneChangeSet.add((sceneData) => {
 	drawables.length = 0;
 
 	const sprites = [
-		...sceneComponentsMap.get(sceneData.name)!.get("sprite")!.values(),
+		...sceneComponentsMap.get(sceneData.name)!.get("sprite")!.map.values(),
 	] as Array<Box<Sprite>>;
 
 	sceneComponentsMap
 		.get(sceneData.name)!
 		.get("position")!
-		.values()
+		.map.values()
 		.forEach((box, index) => {
 			drawables.push({
 				position: box as Box<Vector>,
